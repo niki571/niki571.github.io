@@ -2,7 +2,7 @@
 layout: post
 title:  "怎样解决agnoster.zsh-theme字体不显示问题"
 date:   2017-01-04 10:23:30 +0800
-categories: [Tech]
+categories: [Frontend]
 excerpt:
 tags:
   - CN
