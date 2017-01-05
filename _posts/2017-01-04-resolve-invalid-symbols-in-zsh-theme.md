@@ -9,7 +9,7 @@ tags:
   - Tools
 ---
 
-这几天逛GitHub的时候突然发现一款很妖艳的皮肤 [wild-cherry](https://github.com/mashaal/wild-cherry) 见下图，感觉很炫酷！有Zsh, iTerm, Sublime, Atom版，甚至还有Slack！立刻决定给iTerm2换上。
+这几天逛GitHub的时候突然发现一款很妖艳的皮肤 [wild-cherry](https://github.com/mashaal/wild-cherry) 见下图，感觉很炫酷！有Zsh, iTerm, Sublime, Atom版，甚至还有Slack！立刻决定给iTerm2换上。yayaya
 
 ![wild-cherry](../../assets/images/wild_cherry.gif)
 
