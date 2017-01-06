@@ -80,6 +80,14 @@ Employee.prototype.greet = function() {
 
 ###### 让我们执行一下
 
+全部代码如下，可以复制到console里面
+
+```
+
+```
+
+
+
 ### get的另类写法
 
 ### ES6的写法

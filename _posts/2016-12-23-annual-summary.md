@@ -21,9 +21,10 @@ tags:
 >* react redux react-router
 >* webpack
 
-近期计划复习或掌握的技术：
+2017年的小目标：
 
->* html5 css3
->* svg
->* nodejs koa
+>* 成为一个积极更新博客的好青年
+>* 不浮于表面更深层次地钻研前端框架等技术
+>* 有一个自己idea产生的实用性的开源项目
+
 
