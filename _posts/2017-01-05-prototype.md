@@ -83,10 +83,34 @@ Employee.prototype.greet = function() {
 全部代码如下，可以复制到console里面
 
 ```
+var Person = function() {
+  this.canTalk = true;
+};
 
+Person.prototype.greet = function() {
+  if (this.canTalk) {
+    console.log('Hi, I am ' + this.name);
+  }
+};
+
+var Employee = function(name, title) {
+  Person.call(this);
+  this.name = name;
+  this.title = title;
+};
+
+Employee.prototype = Object.create(Person.prototype);
+Employee.prototype.constructor = Employee;
+
+Employee.prototype.greet = function() {
+  if (this.canTalk) {
+    console.log('Hi, I am ' + this.name + ', the ' + this.title);
+  }
+};
+var bob = new Employee('Bob', 'Builder');
 ```
 
-
+执行`bob.greet`
 
 ### get的另类写法
 
