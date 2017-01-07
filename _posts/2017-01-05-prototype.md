@@ -129,7 +129,7 @@ var bob = new Employee('Bob', 'Builder');
 >
 >![characters](../../assets/images/prototype/constructor.png)
 >
->发现子类原型构造函数指向了父类而不是子类本身，所以这句话就是为了把构造函数指向子类自己的作用
+>发现子类原型构造函数指向了父类而不是子类本身，这是因为`Employee.prototype = Object.create(Person.prototype);`造成的，这当然不是我们想要的，所以这句话就是为了把构造函数重新指向子类自己
 
 
 ### get的另类写法
