@@ -41,3 +41,5 @@ console.log(obj3.value); //"ccc"
 [Is JavaScript a pass-by-reference or pass-by-value language?](https://github.com/simongong/js-stackoverflow-highest-votes/blob/master/questions21-30/parameter-passed-by-value-or-reference.md)
 
 [JS是按值传递还是按引用传递?](http://bosn.me/js/js-call-by-sharing/)
+
+[javascript传递参数如果是object的话，是按值传递还是按引用传递？](https://www.zhihu.com/question/27114726)
