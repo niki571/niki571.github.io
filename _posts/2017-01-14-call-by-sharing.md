@@ -35,7 +35,7 @@ console.log(num);  // 10
 console.log(name); // "AAA"
 console.log(obj1.value); //"aaa"
 console.log(obj2.value); //"ccc"
-console.log(obj3.value);
+console.log(obj3.value); //"ccc"
 ```
 
 [Is JavaScript a pass-by-reference or pass-by-value language?](https://github.com/simongong/js-stackoverflow-highest-votes/blob/master/questions21-30/parameter-passed-by-value-or-reference.md)
