@@ -11,7 +11,7 @@ tags:
 
 这一篇是写给我的好朋友的，帮她梳理一下原型继承的知识～都是一些我自己的理解，如有不正确的地方欢迎指正～
 
-### ES5中的原型继承
+## ES5中的原型继承
 
 >* 大写的都是构造函数
 >* 构造函数可以通过new Person得到无数个有相同属性和相同方法却又可以有各自属性方法的实例
@@ -80,7 +80,7 @@ var bob = new Employee('Bob', 'Builder');
 
 ###### 让我们执行一下
 
-全部代码如下，可以复制到console里面
+全部代码如下，可以复制到console里面：
 
 ```
 var Person = function() {
@@ -130,6 +130,30 @@ var bob = new Employee('Bob', 'Builder');
 >![characters](../../assets/images/prototype/constructor.png)
 >
 >发现子类原型构造函数指向了父类而不是子类本身，这是因为`Employee.prototype = Object.create(Person.prototype);`造成的，这当然不是我们想要的，所以这句话就是为了把构造函数重新指向子类自己
+
+>![characters](../../assets/images/prototype/bob.png)
+
+##### instanceof并不是固定的
+
+复制以下代码到console：
+
+```
+var Person = function() {
+  this.canTalk = true;
+};
+
+Person.prototype.greet = function() {
+  if (this.canTalk) {
+    console.log('Hi, I am ' + this.name);
+  }
+};
+var xiaowang = new Person();
+xiaowang instanceof Person //true
+```
+
+>和我们预料的一样返回true，小王是Person的实例。但是假如此时，`Person.prototype={}`，再执行`xiaowang instanceof Person`，又返回false了。原型的改变会影响实例的原型链会影响instanceof的结果。
+
+
 
 
 ### get的另类写法
