@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "javascript按值传递还是按引用传递?"
+title:  "javascript函数传参是按值传递还是按引用传递?"
 date:   2017-01-14 15:47:30 +0800
 categories: [Frontend]
 excerpt:
@@ -34,6 +34,35 @@ change(num, name, obj1, obj2);
 console.log(num);  // 10
 console.log(name); // "AAA"
 console.log(obj1.value); //"aaa"
+console.log(obj2.value); //"ccc"
+console.log(obj3.value); //"ccc"
+```
+
+对比：
+
+```
+var num = 10,
+    name = "AAA",
+    obj1 = {
+      value: "aaa"
+    },
+    obj2 = {
+     value: "bbb"
+    },
+    obj3 = obj2;
+ 
+function change() {
+    num = num * 10;
+    name = "BBB";
+    obj1 = obj2;
+    obj2.value = "ccc";
+}
+ 
+change();
+ 
+console.log(num);  // 100
+console.log(name); // "BBB"
+console.log(obj1.value); //"ccc"
 console.log(obj2.value); //"ccc"
 console.log(obj3.value); //"ccc"
 ```
