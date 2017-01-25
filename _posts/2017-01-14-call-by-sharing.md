@@ -40,9 +40,9 @@ console.log(obj2.value); //"ccc"
 console.log(obj3.value); //"ccc"
 ```
 
->* Number类型、String类型作为参数是按值传递，函数内部操作不影响外部作用域的值
->* Object类型如果在函数内部被赋新值，函数内部操作不影响外部作用域的值
->* Object类型如果在函数内部属性被赋新值，该object就是按引用传递，函数内部操作会影响外部作用域的值
+>* Number类型、String类型作为参数是按值传递，函数内部操作不影响外部作用域的值。
+>* Object类型如果在函数内部被赋新值，函数内部操作不影响外部作用域的值。
+>* Object类型如果在函数内部属性被赋新值，该object就是按引用传递，函数内部操作会影响外部作用域的值。
 
 对比：
 
@@ -72,6 +72,36 @@ console.log(obj1.value); //"ccc"
 console.log(obj2.value); //"ccc"
 console.log(obj3.value); //"ccc"
 ```
+
+### ES6 有默认参数的函数传参
+
+```
+var x = 1;
+function foo(x, y = function() { x = 2; }) {
+  var x = 3;
+  y();
+  console.log(x);
+}
+
+foo() // 3
+x // 1
+```
+
+>* 有默认参数的函数，函数外是全局作用域，函数参数是独立作用域，函数内部是局部作用域。
+
+```
+var x = 1;
+function foo(x, y = function() { x = 2; }) {
+  x = 3;
+  y();
+  console.log(x);
+}
+
+foo() // 2
+x // 1
+```
+
+>* 去掉`var x = 3`的`var`，函数内部变量x指向函数参数作用域。
 
 ### exports和module.exports
 
