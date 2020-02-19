@@ -1,4 +1,4 @@
-# Blog of Nicole Wu
+# Blog of Nicole Woo
 I'm a front-end engineer learned by myself after graduating from university.
 Firstly working in Shanghai, and now move to Hangzhou.
 I'd like to share knowledge about front-end and ideas in life with you.
