@@ -104,4 +104,4 @@ theme: landscape
 deploy:
   type: git
   repository: https://github.com/niki571/niki571.github.io
-  branch: master
+  branch: gh-pages
