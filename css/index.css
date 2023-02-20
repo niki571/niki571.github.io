@@ -32,6 +32,9 @@ abbr[title] {
 b,
 strong {
   font-weight: bolder;
+  color: #df5b5b;
+  background-color: #f5efef;
+  padding: 0 0.3em;
 }
 code,
 kbd,
@@ -180,6 +183,9 @@ abbr[title] {
 b,
 strong {
   font-weight: bolder;
+  color: #df5b5b;
+  background-color: #f5efef;
+  padding: 0 0.3em;
 }
 code,
 kbd,
