@@ -1,0 +1,242 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="依赖注入       Nest 是 Node.js 的服务端框架，它最出名的就是 IOC（inverse of control） 机制了，也就是不需要手动创建实例，框架会自动扫描需要加载的类，并创建他们的实例放到容器里，实例化时还会根据该类的构造器参数自动注入依赖。 它一般是这样用的： 比如入口 Module 里引入某个模块的 Module： 1234567">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从 reflect metadata 理解 Nest 的实现原理">
+<meta property="og:url" content="https://niki571.github.io/%E4%BB%8Ereflect-metadata%E7%90%86%E8%A7%A3Nest%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="依赖注入       Nest 是 Node.js 的服务端框架，它最出名的就是 IOC（inverse of control） 机制了，也就是不需要手动创建实例，框架会自动扫描需要加载的类，并创建他们的实例放到容器里，实例化时还会根据该类的构造器参数自动注入依赖。 它一般是这样用的： 比如入口 Module 里引入某个模块的 Module： 1234567">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/86d0535710ad48348206520ee2cb89ee_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/b5a7ba0e6dc94d0fb842cafc25ac4dd2_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/69c386cd587d4b958212a5ee1ee09a96_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/783e8067a805459d9ec0d56292f529a4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/7708d7a8c01a4fb6ae10b51b98442921_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/ed7bde270882465cb9ffdc624bbb4e61_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/a9cf799a18794e0a903170b6bf76fa21_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/f2bb578b9b624bf993aaedc250ec053d_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/12e7eca6e54e4fa1867b16b83237135a_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/32ea9f7aa5374ce681053a4dcae06723_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/bd7235bd63374965a7d55c5866471983_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/c82a1514a28749668ec631b7e565e466_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/4c525cd38ea542bab80ef31a15719265_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/d14d5736bef144a9a6830c7626b15b9f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/af6a8ad0ce814857881fbf2a7c503e7c_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/3c6b32199ab1443794f56bdac63a2a5b_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/a984d979388a42bbb77bcef2b3c4dc26_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="article:published_time" content="2023-02-21T02:40:57.000Z">
+<meta property="article:modified_time" content="2023-02-21T03:08:27.291Z">
+<meta property="article:author" content="WuQianying">
+<meta property="article:tag" content="原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/86d0535710ad48348206520ee2cb89ee_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"><title>从 reflect metadata 理解 Nest 的实现原理 | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/%E4%BB%8Ereflect-metadata%E7%90%86%E8%A7%A3Nest%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":true},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"Copy","copySuccess":"Copy Success","copyError":"Copy Error"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">从 reflect metadata 理解 Nest 的实现原理</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">Created</span><span class="post-meta-item__value">2023-02-21</span></span><span class="post-meta-item post-meta-item--updatetime"><span class="post-meta-item__icon"><i class="far fa-calendar-check"></i></span><span class="post-meta-item__info">Updated</span><span class="post-meta-item__value">2023-02-21</span></span></div></header><div class="post-body">
+        <h1 id="依赖注入"   >
+          <a href="#依赖注入" class="heading-link"><i class="fas fa-link"></i></a><a href="#依赖注入" class="headerlink" title="依赖注入"></a>依赖注入</h1>
+      <p>Nest 是 Node.js 的服务端框架，它最出名的就是 IOC（inverse of control） 机制了，也就是不需要手动创建实例，框架会自动扫描需要加载的类，并创建他们的实例放到容器里，实例化时还会根据该类的构造器参数自动注入依赖。</p>
+<p>它一般是这样用的：</p>
+<p>比如入口 Module 里引入某个模块的 Module：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Module</span> &#125; <span class="keyword">from</span> <span class="string">&quot;@nestjs/common&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsModule</span> &#125; <span class="keyword">from</span> <span class="string">&quot;./cats/cats.module&quot;</span>;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Module</span>(&#123;</span><br><span class="line">  <span class="attr">imports</span>: [<span class="title class_">CatsModule</span>],</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">AppModule</span> &#123;&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>然后这个模块的 Module 里会声明 Controller 和 Service：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Module</span> &#125; <span class="keyword">from</span> <span class="string">&quot;@nestjs/common&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsController</span> &#125; <span class="keyword">from</span> <span class="string">&quot;./cats.controller&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsService</span> &#125; <span class="keyword">from</span> <span class="string">&quot;./cats.service&quot;</span>;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Module</span>(&#123;</span><br><span class="line">  <span class="attr">controllers</span>: [<span class="title class_">CatsController</span>],</span><br><span class="line">  <span class="attr">providers</span>: [<span class="title class_">CatsService</span>],</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CatsModule</span> &#123;&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>Controller 里就是声明 url 对应的处理逻辑：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Body</span>, <span class="title class_">Controller</span>, <span class="title class_">Get</span>, <span class="title class_">Param</span>, <span class="title class_">Post</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@nestjs/common&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./cats.service&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CreateCatDto</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./dto/create-cat.dto&#x27;</span>;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Controller</span>(<span class="string">&#x27;cats&#x27;</span>)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CatsController</span> &#123;</span><br><span class="line"><span class="title function_">constructor</span>(<span class="params">private readonly catsService: CatsService</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Post</span>()</span><br><span class="line"><span class="keyword">async</span> <span class="title function_">create</span>(<span class="params">@Body() createCatDto: CreateCatDto</span>) &#123;</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">catsService</span>.<span class="title function_">create</span>(createCatDto);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Get</span>()</span><br><span class="line"><span class="keyword">async</span> <span class="title function_">findAll</span>(): <span class="title class_">Promise</span>&lt;<span class="title class_">Cat</span>[]&gt; &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">catsService</span>.<span class="title function_">findAll</span>();</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>这个 CatsController 的构造器声明了对 CatsService 的依赖：</p>
+<p>然后 CatsService 里就可以去操作数据库进行增删改查了。这里简单实现一下：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Injectable</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@nestjs/common&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Cat</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./interfaces/cat.interface&#x27;</span>;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CatsService</span> &#123;</span><br><span class="line">private readonly <span class="attr">cats</span>: <span class="title class_">Cat</span>[] = [];</span><br><span class="line"></span><br><span class="line"><span class="title function_">create</span>(<span class="params">cat: Cat</span>) &#123;</span><br><span class="line"><span class="variable language_">this</span>.<span class="property">cats</span>.<span class="title function_">push</span>(cat);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">findAll</span>(): <span class="title class_">Cat</span>[] &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">cats</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></div></figure>
+
+<p>之后在入口处调用 create 把整个 nest 应用跑起来：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">NestFactory</span> &#125; <span class="keyword">from</span> <span class="string">&quot;@nestjs/core&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">AppModule</span> &#125; <span class="keyword">from</span> <span class="string">&quot;./app.module&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">bootstrap</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> app = <span class="keyword">await</span> <span class="title class_">NestFactory</span>.<span class="title function_">create</span>(<span class="title class_">AppModule</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> app.<span class="title function_">listen</span>(<span class="number">3000</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">bootstrap</span>();</span><br></pre></td></tr></table></div></figure>
+
+<p>然后浏览器访问下我们写的那个 controller 对应的 url，打个断点：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/86d0535710ad48348206520ee2cb89ee_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>你会发现 controller 的实例已经创建了，而且 service 也给注入了。这就是依赖注入的含义。</p>
+<p>这种机制就叫做 IOC（控制反转），也叫依赖注入，好处是显而易见的，就是只需要声明依赖关系，不需要自己创建对象，框架会扫描声明然后自动创建并注入依赖。</p>
+<p>Java 里最流行的 Spring 框架就是 IOC 的实现，而 Nest 也是这样一个实现了 IOC 机制的 Node.js 的后端框架。</p>
+<p>不知道大家有没有感觉很神奇，只是通过装饰器声明了一下，然后启动 Nest 应用，这时候对象就给创建好了，依赖也给注入了。</p>
+<p>那它是怎么实现的呢？</p>
+<p>大家如果就这样去思考它的实现原理，还真不一定能想出来，因为缺少了一些前置知识。也就是实现 Nest 最核心的一些 api： Reflect 的 metadata 的 api。</p>
+
+        <h1 id="Reflect-Metadata"   >
+          <a href="#Reflect-Metadata" class="heading-link"><i class="fas fa-link"></i></a><a href="#Reflect-Metadata" class="headerlink" title="Reflect Metadata"></a>Reflect Metadata</h1>
+      <p>有的同学会说，Reflect 的 api 我很熟呀，就是操作对象的属性、方法、构造器的一些 api：</p>
+<p>比如 Reflect.get 是获取对象属性值</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/b5a7ba0e6dc94d0fb842cafc25ac4dd2_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>Reflect.set 是设置对象属性值</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/69c386cd587d4b958212a5ee1ee09a96_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>Reflect.has 是判断对象属性是否存在</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/783e8067a805459d9ec0d56292f529a4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>Reflect.apply 是调用某个方法，传入对象和参数</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/7708d7a8c01a4fb6ae10b51b98442921_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>Reflect.construct 是用构造器创建对象实例，传入构造器参数</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/ed7bde270882465cb9ffdc624bbb4e61_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>这些 api 在 MDN 文档里可以查到，因为它们都已经是 es 标准了，也被很多浏览器实现了。</p>
+<p>但是实现 Nest 用到的 api 还没有进入标准，还在草案阶段，也就是 metadata 的 api：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/a9cf799a18794e0a903170b6bf76fa21_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>它有这些 api：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">defineMetadata</span>(metadataKey, metadataValue, target);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Reflect</span>.<span class="title function_">defineMetadata</span>(metadataKey, metadataValue, target, propertyKey);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> result = <span class="title class_">Reflect</span>.<span class="title function_">getMetadata</span>(metadataKey, target);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> result = <span class="title class_">Reflect</span>.<span class="title function_">getMetadata</span>(metadataKey, target, propertyKey);</span><br></pre></td></tr></table></div></figure>
+
+<p><code>Reflect.defineMetadata</code>和<code>Reflect.getMetadata</code>分别用于设置和获取某个类的元数据，如果最后传入了属性名，还可以单独为某个属性设置元数据。</p>
+<p>那元数据存在哪呢？</p>
+<p>存在类或者对象上呀，如果给类或者类的静态属性添加元数据，那就保存在类上，如果给实例属性添加元数据，那就保存在对象上，用类似<code>[[metadata]]</code>的<code>key</code>来存的。</p>
+<p>这有啥用呢？</p>
+<p>看上面的 api 确实看不出啥来，但它也支持装饰器的方式使用：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@<span class="title class_">Reflect</span>.<span class="title function_">metadata</span>(metadataKey, metadataValue)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span> &#123;</span><br><span class="line">  @<span class="title class_">Reflect</span>.<span class="title function_">metadata</span>(metadataKey, metadataValue)</span><br><span class="line">  <span class="title function_">method</span>(<span class="params"></span>) &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p><code>Reflect.metadata</code>装饰器当然也可以再封装一层：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">Type</span>(<span class="params">type</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Reflect</span>.<span class="title function_">metadata</span>(<span class="string">&quot;design:type&quot;</span>, type);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">ParamTypes</span>(<span class="params">...types</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Reflect</span>.<span class="title function_">metadata</span>(<span class="string">&quot;design:paramtypes&quot;</span>, types);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">ReturnType</span>(<span class="params">type</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title class_">Reflect</span>.<span class="title function_">metadata</span>(<span class="string">&quot;design:returntype&quot;</span>, type);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">ParamTypes</span>(<span class="title class_">String</span>, <span class="title class_">Number</span>)</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Guang</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">text, i</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  @<span class="title class_">Type</span>(<span class="title class_">String</span>)</span><br><span class="line">  <span class="keyword">get</span> <span class="title function_">name</span>() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;text&quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @<span class="title class_">Type</span>(<span class="title class_">Function</span>)</span><br><span class="line">  @<span class="title class_">ParamTypes</span>(<span class="title class_">Number</span>, <span class="title class_">Number</span>)</span><br><span class="line">  @<span class="title class_">ReturnType</span>(<span class="title class_">Number</span>)</span><br><span class="line">  <span class="title function_">add</span>(<span class="params">x, y</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>然后我们就可以通过 Reflect metadata 的 api 或者这个类和对象的元数据了：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = <span class="keyword">new</span> <span class="title class_">Guang</span>(<span class="string">&quot;a&quot;</span>, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> paramTypes = <span class="title class_">Reflect</span>.<span class="title function_">getMetadata</span>(<span class="string">&quot;design:paramtypes&quot;</span>, obj, <span class="string">&quot;add&quot;</span>);</span><br><span class="line"><span class="comment">// [Number, Number]</span></span><br></pre></td></tr></table></div></figure>
+
+<p>这里我们用 Reflect.getMetadata 的 api 取出了 add 方法的参数的类型。</p>
+<p>看到这里，大家是否明白 nest 的原理了呢？</p>
+<p>我们再看下 nest 的源码：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/f2bb578b9b624bf993aaedc250ec053d_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>上面就是<code>@Module</code>装饰器的实现，里面就调用了 Reflect.defineMetadata 来给这个类添加了一些元数据。<br>所以我们这样用的时候：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Module</span> &#125; <span class="keyword">from</span> <span class="string">&quot;@nestjs/common&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsController</span> &#125; <span class="keyword">from</span> <span class="string">&quot;./cats.controller&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsService</span> &#125; <span class="keyword">from</span> <span class="string">&quot;./cats.service&quot;</span>;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Module</span>(&#123;</span><br><span class="line">  <span class="attr">controllers</span>: [<span class="title class_">CatsController</span>],</span><br><span class="line">  <span class="attr">providers</span>: [<span class="title class_">CatsService</span>],</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CatsModule</span> &#123;&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>其实就是给 CatsModule 添加了 controllers 的元数据和 providers 的元数据。</p>
+<p>后面创建 IOC 容器的时候就会取出这些元数据来处理：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/12e7eca6e54e4fa1867b16b83237135a_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/32ea9f7aa5374ce681053a4dcae06723_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>而且 @Controller 和 @Injectable 的装饰器也是这样实现的：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/bd7235bd63374965a7d55c5866471983_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/c82a1514a28749668ec631b7e565e466_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>看到这里，大家是否想明白 nest 的实现原理了呢？</p>
+<p>其实就是通过装饰器给 class 或者对象添加元数据，然后初始化的时候取出这些元数据，进行依赖的分析，然后创建对应的实例对象就可以了。</p>
+<p>所以说，nest 实现的核心就是 Reflect metadata 的 api。</p>
+<p>当然，现在 metadata 的 api 还在草案阶段，需要使用 reflect-metadata 这个 polyfill 包才行。</p>
+<p>其实还有一个疑问，依赖的扫描可以通过 metadata 数据，但是创建的对象需要知道构造器的参数，现在并没有添加这部分 metadata 数据呀：</p>
+<p>比如这个 CatsController 依赖了 CatsService，但是并没有添加 metadata 呀：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Body</span>, <span class="title class_">Controller</span>, <span class="title class_">Get</span>, <span class="title class_">Param</span>, <span class="title class_">Post</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@nestjs/common&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CatsService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./cats.service&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">CreateCatDto</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./dto/create-cat.dto&#x27;</span>;</span><br><span class="line"></span><br><span class="line">@<span class="title class_">Controller</span>(<span class="string">&#x27;cats&#x27;</span>)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CatsController</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">private readonly catsService: CatsService</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  @<span class="title class_">Post</span>()</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">create</span>(<span class="params">@Body() createCatDto: CreateCatDto</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">catsService</span>.<span class="title function_">create</span>(createCatDto);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @<span class="title class_">Get</span>()</span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">findAll</span>(): <span class="title class_">Promise</span>&lt;<span class="title class_">Cat</span>[]&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">catsService</span>.<span class="title function_">findAll</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>这就不得不提到 TypeScript 的优势了，TypeScript 支持编译时自动添加一些 metadata 数据：</p>
+<p>比如这段代码：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&quot;reflect-metadata&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Guang</span> &#123;</span><br><span class="line">  @<span class="title class_">Reflect</span>.<span class="title function_">metadata</span>(<span class="string">&quot;名字&quot;</span>, <span class="string">&quot;光光&quot;</span>)</span><br><span class="line">  public <span class="title function_">say</span>(<span class="attr">a</span>: number): string &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;加油鸭&#x27;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>按理说我们只添加了一个元数据，生成的代码也确实是这样的：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/4c525cd38ea542bab80ef31a15719265_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>但是呢，ts 有一个编译选项叫做 emitDecoratorMetadata，开启它就会自动添加一些元数据。</p>
+<p>开启之后再试一下：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/d14d5736bef144a9a6830c7626b15b9f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>你会看到多了三个元数据：</p>
+<p><code>design:type</code>是<code>Function</code>，很明显，这个是描述装饰目标的元数据，这里装饰的是函数</p>
+<p><code>design:paramtypes</code>是<code>[Number]</code>，很容易理解，就是参数的类型</p>
+<p><code>design:returntype</code>是<code>String</code>，也很容易理解，就是返回值的类型</p>
+<p>所以说，只要开启了这个编译选项，ts 生成的代码会自动添加一些元数据。</p>
+<p>然后创建对象的时候就可以通过 design:paramtypes 来拿到构造器参数的类型了，那不就知道怎么注入依赖了么？</p>
+<p>所以，nest 源码里你会看到这样的代码：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/af6a8ad0ce814857881fbf2a7c503e7c_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>就是获取构造器的参数类型的。这个常量就是我们上面说的那个：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/3c6b32199ab1443794f56bdac63a2a5b_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>这也是为什么 nest 会用 ts 来写，因为它很依赖这个 emitDecoratorMetadata 的编译选项。</p>
+<p>你用 cli 生成的代码模版里也都默认开启了这个编译选项：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/a984d979388a42bbb77bcef2b3c4dc26_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>这就是 nest 的核心实现原理：<strong>通过装饰器给 class 或者对象添加 metadata，并且开启 ts 的 emitDecoratorMetadata 来自动添加类型相关的 metadata，然后运行的时候通过这些元数据来实现依赖的扫描，对象的创建等等功能。</strong></p>
+
+        <h1 id="总结"   >
+          <a href="#总结" class="heading-link"><i class="fas fa-link"></i></a><a href="#总结" class="headerlink" title="总结"></a>总结</h1>
+      <p>Nest 是 Node.js 的后端框架，他的核心就是 IOC 容器，也就是自动扫描依赖，创建实例对象并且自动依赖注入。</p>
+<p>要搞懂它的实现原理，需要先学习<code>Reflect metadata</code>的 api：</p>
+<p>这个是给类或者对象添加<code>metadata</code>的。可以通过<code>Reflect.metadata</code>给类或者对象添加元数据，之后用到这个类或者对象的时候，可以通过<code>Reflect.getMetadata</code>把它们取出来。</p>
+<p><code>Nest</code>的<code>Controller</code>、<code>Module</code>、<code>Service</code>等等所有的装饰器都是通过 <code>Reflect.meatdata</code>给类或对象添加元数据的，然后初始化的时候取出来做依赖的扫描，实例化后放到<code>IOC</code>容器里。</p>
+<p>实例化对象还需要构造器参数的类型，这个开启 ts 的<code>emitDecoratorMetadata</code>的编译选项之后， ts 就会自动添加一些元数据，也就是<code>design:type</code>、<code>design:paramtypes</code>、<code>design:returntype</code>这三个，分别代表被装饰的目标的类型、参数的类型、返回值的类型。</p>
+<p>当然，<code>reflect metadata</code>的 api 还在草案阶段，需要引入 refelect metadata 的包做 polyfill。</p>
+<p>nest 的一系列装饰器就是给 class 和对象添加 metadata 的，然后依赖扫描和依赖注入的时候就把 metadata 取出来做一些处理。</p>
+<p>理解了 metadata，nest 的实现原理就很容易搞懂了。</p>
+<figure class="highlight plaintext"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></div></figure>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ END ------</div></div><div class="post-copyright copyright"><div class="copyright-author"><span class="copyright-author__name">Author: </span><span class="copyright-author__value"><a href="https://niki571.github.io">WuQianying</a></span></div><div class="copyright-link"><span class="copyright-link__name">Link: </span><span class="copyright-link__value"><a href="https://niki571.github.io/%E4%BB%8Ereflect-metadata%E7%90%86%E8%A7%A3Nest%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/">https://niki571.github.io/%E4%BB%8Ereflect-metadata%E7%90%86%E8%A7%A3Nest%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/</a></span></div><div class="copyright-notice"><span class="copyright-notice__name">Copyright: </span><span class="copyright-notice__value">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" rel="external nofollow" target="_blank">BY-NC-SA</a> unless stating additionally</span></div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://niki571.github.io/tags/%E5%8E%9F%E7%90%86/">原理</a></span></div><nav class="post-paginator paginator"><div class="paginator-next"><a class="paginator-next__link" href="/Flutter%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%EF%BC%88%E4%B8%80%EF%BC%89-Widget/"><span class="paginator-prev__text">Flutter 源码解析（一） Widget</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">Catalog</span><span class="sidebar-nav-ov">Overview</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="toc-number">1.</span> <span class="toc-text">
+          依赖注入</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reflect-Metadata"><span class="toc-number">2.</span> <span class="toc-text">
+          Reflect Metadata</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">
+          总结</span></a></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/stun-logo.svg" alt="avatar"></div><p class="sidebar-ov-author__text">Keep studying, Keep Creating</p></div><div class="sidebar-ov-cc"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener" data-popover="Creative Commons" data-popover-pos="up"><img src="/images/cc-by-nc-sa.svg"></a></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">You have read </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>Powered by <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a></span><span> v6.3.0</span><span class="footer__devider">|</span><span>Theme - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
