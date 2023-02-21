@@ -2,7 +2,7 @@
 title: React hooks 源码解析
 date: 2021-04-15 19:56:12
 tags: React
-categories: React
+categories: 前端
 ---
 
 本文将讲解 hooks 的执行过程以及常用的 hooks 的源码。
@@ -356,14 +356,14 @@ export function renderWithHooks<Props, SecondArg>(
 }
 ```
 
-**renderWithHooks**函数中首先会将 workInProgress fiber 树的 memoizedState（前面深入理解 fiber 一文中提到过，memoizedState 记录了当前页面的 state，在函数组件中，它以链表的形式记录了 hooks 信息） 和 updateQueue 置为 null，在接下来的函数组件执行过程中，会把新的 hooks 信息挂载到这两个属性上，然后在 commit 阶段，会将根据 current fiber 树构建当前的 workInProgress fiber 树，并保存 hooks 信息，用于替换真实的 DOM 元素节点。
-然后会通过 current 上是否有 memoizedState，判断组件是否首次渲染，从而分别将 HooksDispatcherOnMount 和 HooksDispatcherOnUpdate 赋值给 **ReactCurrentDispatcher.current**。
-接下来执行**Component()**来调用函数组件的构造函数，组件的 hooks 会被依次执行，并将 hooks 的信息保存到 workInProgress fiber 上（待会儿会细讲执行过程），然后将返回的 jsx 信息保存到 children 上。
+`renderWithHooks`函数中首先会将 workInProgress fiber 树的 memoizedState（前面深入理解 fiber 一文中提到过，memoizedState 记录了当前页面的 state，在函数组件中，它以链表的形式记录了 hooks 信息） 和 updateQueue 置为 null，在接下来的函数组件执行过程中，会把新的 hooks 信息挂载到这两个属性上，然后在 commit 阶段，会将根据 current fiber 树构建当前的 workInProgress fiber 树，并保存 hooks 信息，用于替换真实的 DOM 元素节点。
+然后会通过 current 上是否有 memoizedState，判断组件是否首次渲染，从而分别将 HooksDispatcherOnMount 和 HooksDispatcherOnUpdate 赋值给 `ReactCurrentDispatcher.current`。
+接下来执行`Component()`来调用函数组件的构造函数，组件的 hooks 会被依次执行，并将 hooks 的信息保存到 workInProgress fiber 上（待会儿会细讲执行过程），然后将返回的 jsx 信息保存到 children 上。
 最后会重置一些变量，并返回函数组件执行后的 jsx。
 
 ## 不同阶段更新 Hook
 
-现在我们终于找到了**ReactCurrentDispatcher.current**的定义，首次渲染时，会将 **HooksDispatcherOnMount**赋值给 **ReactCurrentDispatcher.current**，更新时，会将**HooksDispatcherOnUpdate** 赋值给 **ReactCurrentDispatcher.current**， dispatcher 上面挂在了各种 hooks：
+现在我们终于找到了`ReactCurrentDispatcher.current`的定义，首次渲染时，会将 `HooksDispatcherOnMount`赋值给 `ReactCurrentDispatcher.current`，更新时，会将`HooksDispatcherOnUpdate` 赋值给 `ReactCurrentDispatcher.current`， dispatcher 上面挂在了各种 hooks：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -411,11 +411,11 @@ const HooksDispatcherOnUpdate: Dispatcher = {
 };
 ```
 
-首次渲染时，**HooksDispatcherOnMount**上挂载的 hook 都是 mountXXX，而更新时 **HooksDispatcherOnMount**上挂在的 hook 都是 updateXXX。所有 mount 阶段的 hook 中，都会执行 **mountWorkInProgressHook**这个函数，而所有 update 阶段的 hook 中，都会执行 **updateWorkInProgressHook**这个函数。下面我们来看下这两个函数分别做了什么。
+首次渲染时，`HooksDispatcherOnMount`上挂载的 hook 都是 mountXXX，而更新时 `HooksDispatcherOnMount`上挂在的 hook 都是 updateXXX。所有 mount 阶段的 hook 中，都会执行 `mountWorkInProgressHook`这个函数，而所有 update 阶段的 hook 中，都会执行 `updateWorkInProgressHook`这个函数。下面我们来看下这两个函数分别做了什么。
 
 ### mountWorkInProgressHook
 
-每个 hooks 方法中，都需要有一个 Hook 结构来存储相关信息。**mountWorkInProgressHook**中，会初始化创建一个 Hook，然后将其挂载到 workInProgress fiber 的 memoizedState 所指向的 hooks 链表上，以便于下次 update 的时候取出该 Hook：
+每个 hooks 方法中，都需要有一个 Hook 结构来存储相关信息。`mountWorkInProgressHook`中，会初始化创建一个 Hook，然后将其挂载到 workInProgress fiber 的 memoizedState 所指向的 hooks 链表上，以便于下次 update 的时候取出该 Hook：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -444,7 +444,7 @@ function mountWorkInProgressHook(): Hook {
 
 ### updateWorkInProgressHook
 
-**updateWorkInProgressHook**的作用主要是取出 current fiber 中的 hooks 链表中对应的 hook 节点，挂载到 workInProgress fiber 上的 hooks 链表：
+`updateWorkInProgressHook`的作用主要是取出 current fiber 中的 hooks 链表中对应的 hook 节点，挂载到 workInProgress fiber 上的 hooks 链表：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -517,12 +517,12 @@ function updateWorkInProgressHook(): Hook {
 }
 ```
 
-我们详细理解一下上述代码，前面我们提到过 **renderWithHooks**函数中会执行如下代码：**workInProgress.memoizedState = null**，所以在执行上述函数时，正常来说 **currentlyRenderingFiber.memoizedState**为 null，需要从 current fiber 对应的节点中取 clone 对应的 hook，再挂载到 workInProgress fiber 的 memoizedState 链表上；re-render 的情况下，由于已经创建过了 hooks，会复用已有的 workInProgress fiber 的 memoizedState。
+我们详细理解一下上述代码，前面我们提到过 `renderWithHooks`函数中会执行如下代码：`workInProgress.memoizedState = null`，所以在执行上述函数时，正常来说 `currentlyRenderingFiber.memoizedState`为 null，需要从 current fiber 对应的节点中取 clone 对应的 hook，再挂载到 workInProgress fiber 的 memoizedState 链表上；re-render 的情况下，由于已经创建过了 hooks，会复用已有的 workInProgress fiber 的 memoizedState。
 这里正好提到，为什么 hook 不能用在条件语句中，因为如果前后两次渲染的条件判断不一致时，会导致 current fiber 和 workInProgress fiber 的 hooks 链表结点无法对齐。
 
 # 总结
 
-所以我们总结一下**renderWithHooks**这个函数，它所做的事情如下：
+所以我们总结一下`renderWithHooks`这个函数，它所做的事情如下：
 
 ![](https://raw.githubusercontent.com/niki571/MyImageHost/main/8cbbf443229943d89902355c2dc5d373_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp)
 
@@ -633,84 +633,84 @@ function mountReducer<S, I, A>(
 // packages/react-reconciler/src/ReactFiberHooks.old.js
 
 function dispatchAction<S, A>(
-fiber: Fiber,
-queue: UpdateQueue<S, A>,
-action: A,
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A,
 ) {
-// ...
-// 获取更新触发时间及优先级
-const eventTime = requestEventTime();
-const lane = requestUpdateLane(fiber);
+  // ...
+  // 获取更新触发时间及优先级
+  const eventTime = requestEventTime();
+  const lane = requestUpdateLane(fiber);
 
-// 初始化 update
-const update: Update<S, A> = {
-lane,
-action,
-eagerReducer: null,
-eagerState: null,
-next: (null: any),
-};
+  // 初始化 update
+  const update: Update<S, A> = {
+    lane,
+    action,
+    eagerReducer: null,
+    eagerState: null,
+    next: (null: any),
+  };
 
-// 将 update 链接到更新队列中
-const pending = queue.pending;
-if (pending === null) {
-update.next = update;
-} else {
-update.next = pending.next;
-pending.next = update;
-}
-queue.pending = update;
+  // 将 update 链接到更新队列中
+  const pending = queue.pending;
+  if (pending === null) {
+    update.next = update;
+  } else {
+    update.next = pending.next;
+    pending.next = update;
+  }
+  queue.pending = update;
 
-const alternate = fiber.alternate;
-if (
-fiber === currentlyRenderingFiber ||
-(alternate !== null && alternate === currentlyRenderingFiber)
-) {
-// currentlyRenderingFiber 存在，说明是在 render 过程发生的更新
-didScheduleRenderPhaseUpdateDuringThisPass = didScheduleRenderPhaseUpdate = true;
-} else {
-if (
-fiber.lanes === NoLanes &&
-(alternate === null || alternate.lanes === NoLanes)
-) {
-// fiber.lanes === NoLanes 说明是首次更新
-// 如果值不同，则保存在 eagerState，下次 render 时可以直接使用，而无需再计算。
-const lastRenderedReducer = queue.lastRenderedReducer;
-if (lastRenderedReducer !== null) {
-let prevDispatcher;
-if (**DEV**) {
-prevDispatcher = ReactCurrentDispatcher.current;
-ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV;
-}
-try {
-const currentState: S = (queue.lastRenderedState: any);
-// 我们可以根据当前 state 和 action 来计算新的 state 值
-const eagerState = lastRenderedReducer(currentState, action);
-update.eagerReducer = lastRenderedReducer;
-update.eagerState = eagerState;
-if (is(eagerState, currentState)) {
-// 如果与当前值相同，则跳过更新
-return;
-}
-// 如果值不同，新一轮更新时渲染 eagerState
-} catch (error) {
-// Suppress the error. It will throw again in the render phase.
-} finally {
-if (**DEV**) {
-ReactCurrentDispatcher.current = prevDispatcher;
-}
-}
-}
-}
-// ...
-// 开启调度，触发新的一轮更新，也就是走 beginWork, completeWork 那一套流程
-scheduleUpdateOnFiber(fiber, lane, eventTime);
-}
-// ...
+  const alternate = fiber.alternate;
+  if (
+    fiber === currentlyRenderingFiber ||
+    (alternate !== null && alternate === currentlyRenderingFiber)
+  ) {
+    // currentlyRenderingFiber 存在，说明是在 render 过程发生的更新
+    didScheduleRenderPhaseUpdateDuringThisPass = didScheduleRenderPhaseUpdate = true;
+  } else {
+    if (
+    fiber.lanes === NoLanes &&
+    (alternate === null || alternate.lanes === NoLanes)
+    ) {
+      // fiber.lanes === NoLanes 说明是首次更新
+      // 如果值不同，则保存在 eagerState，下次 render 时可以直接使用，而无需再计算。
+      const lastRenderedReducer = queue.lastRenderedReducer;
+      if (lastRenderedReducer !== null) {
+        let prevDispatcher;
+        if (**DEV**) {
+          prevDispatcher = ReactCurrentDispatcher.current;
+          ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV;
+        }
+        try {
+          const currentState: S = (queue.lastRenderedState: any);
+          // 我们可以根据当前 state 和 action 来计算新的 state 值
+          const eagerState = lastRenderedReducer(currentState, action);
+          update.eagerReducer = lastRenderedReducer;
+          update.eagerState = eagerState;
+          if (is(eagerState, currentState)) {
+            // 如果与当前值相同，则跳过更新
+            return;
+          }
+        // 如果值不同，新一轮更新时渲染 eagerState
+        } catch (error) {
+          // Suppress the error. It will throw again in the render phase.
+        } finally {
+          if (**DEV**) {
+            ReactCurrentDispatcher.current = prevDispatcher;
+          }
+        }
+      }
+    }
+    // ...
+    // 开启调度，触发新的一轮更新，也就是走 beginWork, completeWork 那一套流程
+    scheduleUpdateOnFiber(fiber, lane, eventTime);
+  }
+  // ...
 
-if (enableSchedulingProfiler) {
-markStateUpdateScheduled(fiber, lane);
-}
+  if (enableSchedulingProfiler) {
+    markStateUpdateScheduled(fiber, lane);
+  }
 }
 ```
 
@@ -930,7 +930,7 @@ function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
 
 ### pushEffect
 
-**pushEffect**函数中主要做了两件事，创建 effect 对象，然后将其添加到 fiber 的 updateQueue 链表上：
+`pushEffect`函数中主要做了两件事，创建 effect 对象，然后将其添加到 fiber 的 updateQueue 链表上：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -971,7 +971,7 @@ function pushEffect(tag, create, destroy, deps) {
 
 ### updateEffect
 
-update 阶段，**useEffect**实际上是调用了**updateEffect**函数，同样是进一步调用了**updateEffectImpl**函数：
+update 阶段，`useEffect`实际上是调用了`updateEffect`函数，同样是进一步调用了`updateEffectImpl`函数：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -990,7 +990,7 @@ function updateEffect(
 }
 ```
 
-所以我们接着往下看**updateEffectImpl**函数做了什么，它从 **updateWorkInProgressHook**取出对应的 hook，然后看上一轮 render 中是否有 hook 存在，若存在且上一轮 render 和本轮的依赖项没发生变化，说明副作用不需要执行，创建一个 effect 对象添加到 updateQueue 链表后直接返回；若两次的依赖项发生了变化，向 fiber 添加 flags 副作用标签，待 commit 时更新，然后再创建一个 effect 对象添加到 updateQueue 链表：
+所以我们接着往下看`updateEffectImpl`函数做了什么，它从 `updateWorkInProgressHook`取出对应的 hook，然后看上一轮 render 中是否有 hook 存在，若存在且上一轮 render 和本轮的依赖项没发生变化，说明副作用不需要执行，创建一个 effect 对象添加到 updateQueue 链表后直接返回；若两次的依赖项发生了变化，向 fiber 添加 flags 副作用标签，待 commit 时更新，然后再创建一个 effect 对象添加到 updateQueue 链表：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -1038,7 +1038,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
 
 ## useRef
 
-**useRef**的代码十分的简单了，我们直接将 mount 阶段和 update 阶段的放到一起来看：
+`useRef`的代码十分的简单了，我们直接将 mount 阶段和 update 阶段的放到一起来看：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -1057,13 +1057,13 @@ function updateRef<T>(initialValue: T): {| current: T |} {
 }
 ```
 
-mount 阶段，调用**mountRef**函数，通过 **mountWorkInProgressHook**创建一个 hook 并添加到 hooks 链表上，**hook.memoizedState**上存储的是{current: initialValue}这个 ref 对象。
-update 阶段，调用**updateRef**函数，通过**updateWorkInProgressHook**方法直接取出**hook.memoizedState**。
-可以看到**hook.memoizedState**指向的是一个对象的引用，这就解释了我们可以直接通过 **ref.current**去改变和获取最新的值，不必进行任何依赖注入。
+mount 阶段，调用`mountRef`函数，通过 `mountWorkInProgressHook`创建一个 hook 并添加到 hooks 链表上，`hook.memoizedState`上存储的是{current: initialValue}这个 ref 对象。
+update 阶段，调用`updateRef`函数，通过`updateWorkInProgressHook`方法直接取出`hook.memoizedState`。
+可以看到`hook.memoizedState`指向的是一个对象的引用，这就解释了我们可以直接通过 `ref.current`去改变和获取最新的值，不必进行任何依赖注入。
 
 ## useCallback & useMemo
 
-**useCallback**和**useMemo**也是一样，源码结构上十分相似，所以也放在一起来讲。
+`useCallback`和`useMemo`也是一样，源码结构上十分相似，所以也放在一起来讲。
 
 ### 用法
 
@@ -1083,8 +1083,8 @@ const callback = useCallback(() => {
 
 ### mount 阶段
 
-mount 时，分别调用了**mountCallback**和**mountMemo**函数，两者都通过 **mountWorkInProgressHook**方法创建 hook 添加到了 hooks 链表中。不同的是，**mountCallback**的 memoizedState 是[callback, nextDeps]，并且返回的是其第一个参数；**mountMemo**的 memoizedState 是 [nextValue, nextDeps]，返回的也是 nextValue 也就是其第一个参数的执行结果。
-所以看上去**useMemo**就是比**useCallback**多了一步第一个参数的执行过程。
+mount 时，分别调用了`mountCallback`和`mountMemo`函数，两者都通过 `mountWorkInProgressHook`方法创建 hook 添加到了 hooks 链表中。不同的是，`mountCallback`的 memoizedState 是[callback, nextDeps]，并且返回的是其第一个参数；`mountMemo`的 memoizedState 是 [nextValue, nextDeps]，返回的也是 nextValue 也就是其第一个参数的执行结果。
+所以看上去`useMemo`就是比`useCallback`多了一步第一个参数的执行过程。
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
@@ -1112,7 +1112,7 @@ function mountMemo<T>(
 
 ### update 阶段
 
-update 时，分别调用了**updateCallback**和**updateMemo** 函数，它们都通过 **updateWorkInProgressHook**取出对应的 hook，若依赖项未发生改变，则取上一轮的 callback 或者 value 返回；若依赖项发生改变，则重新赋值 hook.memoizedState 并返回新的 callback 或新计算的 value：
+update 时，分别调用了`updateCallback`和`updateMemo` 函数，它们都通过 `updateWorkInProgressHook`取出对应的 hook，若依赖项未发生改变，则取上一轮的 callback 或者 value 返回；若依赖项发生改变，则重新赋值 hook.memoizedState 并返回新的 callback 或新计算的 value：
 
 ```javascript
 // packages/react-reconciler/src/ReactFiberHooks.old.js
