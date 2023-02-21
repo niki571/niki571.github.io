@@ -27,6 +27,8 @@ export type Hook = {|
 |};
 ```
 
+<!-- more -->
+
 举个例子，我们通过函数组件使用了两个 useState hooks：
 
 ```javascript

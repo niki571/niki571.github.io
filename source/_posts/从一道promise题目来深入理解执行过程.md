@@ -37,6 +37,8 @@ Promise.resolve()
 
 输出结果按顺序为 0,1,2,3,4,5,6
 
+<!-- more -->
+
 # 分析
 
 一般遇到`Promise.resolve()`时，相当于`new Promise(resolve => {resolve()})`都是同步完成的，不会消耗微任务。

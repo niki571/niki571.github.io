@@ -23,6 +23,8 @@ import { CatsModule } from "./cats/cats.module";
 export class AppModule {}
 ```
 
+<!-- more -->
+
 然后这个模块的 Module 里会声明 Controller 和 Service：
 
 ```javascript

@@ -17,7 +17,7 @@ for (let key in obj) {
 }
 ```
 
-但在某些编辑器（如 vscode）中输入 forin，会自动生成如下代码：
+但在某些编辑器（如 vscode）中输入 for in，会自动生成如下代码：
 
 ```javascript
 for (const key in object) {
@@ -29,6 +29,8 @@ for (const key in object) {
 ```
 
 每次都会想这句是不是多余的呢？
+
+<!-- more -->
 
 `(Object.hasOwnProperty.call(object, key)`
 

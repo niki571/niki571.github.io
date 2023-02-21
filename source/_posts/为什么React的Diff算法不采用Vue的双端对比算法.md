@@ -13,6 +13,8 @@ categories: 前端
 
 最后讲一下为什么 Vue 中不需要使用 Fiber 架构。
 
+<!-- more -->
+
 # React 官方的解析
 
 其实为什么 React 不采用 Vue 的双端对比算法，React 官方已经在源码的注释里已经说明了，我们来看一下 React 官方是怎么说的。

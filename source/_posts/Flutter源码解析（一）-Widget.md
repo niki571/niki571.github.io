@@ -16,6 +16,8 @@ categories: Flutter
 
 Google 在设计`Widget`时，还赋予它一些鲜明的特点：
 
+<!-- more -->
+
 声明式 UI —— 相对于传统 Native 开发中的命令式 UI，声明式 UI 有不少优势，如：开发效率显著提升、UI 可维护性明显加强等；
 
 不可变性 —— Flutter 中所有`Widget`都是不可变的(immutable)，即其内部成员都是不可变的(final)，对于变化的部分需要通过「Stateful Widget-State」的方式实现；
