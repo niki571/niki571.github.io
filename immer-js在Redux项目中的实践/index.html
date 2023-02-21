@@ -1,0 +1,324 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="前言       Immer 是 mobx 的作者写的一个 immutable 库，核心实现是利用 ES6 的 proxy，几乎以最小的成本实现了 js 的不可变数据结构，简单易用、体量小巧、设计巧妙，满足了我们对 JS 不可变数据结构的需求。 无奈网络上完善的文档实在太少，所以自己写了一份，本篇文章以贴近实战的思路和流程，对 Immer 进行了全面的讲解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="immer.js在Redux项目中的实践">
+<meta property="og:url" content="https://niki571.github.io/immer-js%E5%9C%A8Redux%E9%A1%B9%E7%9B%AE%E4%B8%AD%E7%9A%84%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="前言       Immer 是 mobx 的作者写的一个 immutable 库，核心实现是利用 ES6 的 proxy，几乎以最小的成本实现了 js 的不可变数据结构，简单易用、体量小巧、设计巧妙，满足了我们对 JS 不可变数据结构的需求。 无奈网络上完善的文档实在太少，所以自己写了一份，本篇文章以贴近实战的思路和流程，对 Immer 进行了全面的讲解。">
+<meta property="og:locale">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/1677dc8dba33def4_tplv-t2oaga2asx-zoom-in-crop-mark_4536_0_0_0.awebp">
+<meta property="article:published_time" content="2023-02-21T07:41:23.000Z">
+<meta property="article:modified_time" content="2023-02-21T08:10:36.340Z">
+<meta property="article:author" content="WuQianying">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/1677dc8dba33def4_tplv-t2oaga2asx-zoom-in-crop-mark_4536_0_0_0.awebp"><title>immer.js在Redux项目中的实践 | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/immer-js%E5%9C%A8Redux%E9%A1%B9%E7%9B%AE%E4%B8%AD%E7%9A%84%E5%AE%9E%E8%B7%B5/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":true},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"复制","copySuccess":"复制成功","copyError":"复制失败"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">immer.js在Redux项目中的实践</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">发表于</span><span class="post-meta-item__value">2023-02-21</span></span></div></header><div class="post-body">
+        <h1 id="前言"   >
+          <a href="#前言" class="heading-link"><i class="fas fa-link"></i></a><a href="#前言" class="headerlink" title="前言"></a>前言</h1>
+      <p>Immer 是 mobx 的作者写的一个 immutable 库，核心实现是利用 ES6 的 proxy，几乎以最小的成本实现了 js 的不可变数据结构，简单易用、体量小巧、设计巧妙，满足了我们对 JS 不可变数据结构的需求。</p>
+<p>无奈网络上完善的文档实在太少，所以自己写了一份，本篇文章以贴近实战的思路和流程，对 Immer 进行了全面的讲解。</p>
+
+        <h1 id="数据处理存在的问题"   >
+          <a href="#数据处理存在的问题" class="heading-link"><i class="fas fa-link"></i></a><a href="#数据处理存在的问题" class="headerlink" title="数据处理存在的问题"></a>数据处理存在的问题</h1>
+      <p>先定义一个初始对象，供后面例子使用：</p>
+<span id="more"></span>
+
+<p>首先定义一个<code>currentState</code>对象，后面的例子使用到变量 <code>currentState</code>时，如无特殊声明，都是指这个<code>currentState</code>对象</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> currentState = &#123;</span><br><span class="line">  <span class="attr">p</span>: &#123;</span><br><span class="line">    <span class="attr">x</span>: [<span class="number">2</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+<p>哪些情况会一不小心修改原始对象？</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Q1</span></span><br><span class="line"><span class="keyword">let</span> o1 = currentState;</span><br><span class="line">o1.<span class="property">p</span> = <span class="number">1</span>; <span class="comment">// currentState 被修改了</span></span><br><span class="line">o1.<span class="property">p</span>.<span class="property">x</span> = <span class="number">1</span>; <span class="comment">// currentState 被修改了</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Q2</span></span><br><span class="line"><span class="title function_">fn</span>(currentState); <span class="comment">// currentState 被修改了</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">fn</span>(<span class="params">o</span>) &#123;</span><br><span class="line">  o.<span class="property">p1</span> = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> o;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Q3</span></span><br><span class="line"><span class="keyword">let</span> o3 = &#123;</span><br><span class="line">  ...currentState,</span><br><span class="line">&#125;;</span><br><span class="line">o3.<span class="property">p</span>.<span class="property">x</span> = <span class="number">1</span>; <span class="comment">// currentState 被修改了</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Q4</span></span><br><span class="line"><span class="keyword">let</span> o4 = currentState;</span><br><span class="line">o4.<span class="property">p</span>.<span class="property">x</span>.<span class="title function_">push</span>(<span class="number">1</span>); <span class="comment">// currentState 被修改了</span></span><br></pre></td></tr></table></div></figure>
+
+
+        <h1 id="解决引用类型对象被修改的办法"   >
+          <a href="#解决引用类型对象被修改的办法" class="heading-link"><i class="fas fa-link"></i></a><a href="#解决引用类型对象被修改的办法" class="headerlink" title="解决引用类型对象被修改的办法"></a>解决引用类型对象被修改的办法</h1>
+      <ol>
+<li>深度拷贝，但是深拷贝的成本较高，会影响性能；</li>
+<li>ImmutableJS，非常棒的一个不可变数据结构的库，可以解决上面的问题，But，跟 Immer 比起来，ImmutableJS 有两个较大的不足：</li>
+</ol>
+<ul>
+<li>需要使用者学习它的数据结构操作方式，没有 Immer 提供的使用原生对象的操作方式简单、易用；</li>
+<li>它的操作结果需要通过 toJS 方法才能得到原生对象，这使得在操作一个对象的时候，时刻要注意操作的是原生对象还是 ImmutableJS 的返回结果，稍不注意，就会产生意想不到的 bug。</li>
+</ul>
+<p>看来目前已知的解决方案，我们都不甚满意，那么 Immer 又有什么高明之处呢？</p>
+
+        <h1 id="immer-功能介绍"   >
+          <a href="#immer-功能介绍" class="heading-link"><i class="fas fa-link"></i></a><a href="#immer-功能介绍" class="headerlink" title="immer 功能介绍"></a>immer 功能介绍</h1>
+      
+        <h2 id="安装-immer"   >
+          <a href="#安装-immer" class="heading-link"><i class="fas fa-link"></i></a><a href="#安装-immer" class="headerlink" title="安装 immer"></a>安装 immer</h2>
+      <p>欲善其事必先利其器，安装 Immer 是当前第一要务</p>
+<figure class="highlight shell"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i --save immer</span><br></pre></td></tr></table></div></figure>
+
+
+        <h2 id="immer-如何-fix-掉那些不爽的问题"   >
+          <a href="#immer-如何-fix-掉那些不爽的问题" class="heading-link"><i class="fas fa-link"></i></a><a href="#immer-如何-fix-掉那些不爽的问题" class="headerlink" title="immer 如何 fix 掉那些不爽的问题"></a>immer 如何 fix 掉那些不爽的问题</h2>
+      <p>Fix Q1、Q3</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> produce <span class="keyword">from</span> <span class="string">&quot;immer&quot;</span>;</span><br><span class="line"><span class="keyword">let</span> o1 = <span class="title function_">produce</span>(currentState, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">p</span>.<span class="property">x</span> = <span class="number">1</span>;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>Fix Q2</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> produce <span class="keyword">from</span> <span class="string">&quot;immer&quot;</span>;</span><br><span class="line"><span class="title function_">fn</span>(currentState);</span><br><span class="line"><span class="keyword">function</span> <span class="title function_">fn</span>(<span class="params">o</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="title function_">produce</span>(o, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">    draftState.<span class="property">p1</span> = <span class="number">1</span>;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>Fix Q4</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> produce <span class="keyword">from</span> <span class="string">&quot;immer&quot;</span>;</span><br><span class="line"><span class="keyword">let</span> o4 = <span class="title function_">produce</span>(currentState, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">p</span>.<span class="property">x</span>.<span class="title function_">push</span>(<span class="number">1</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>是不是使用非常简单，通过小试牛刀，我们简单的了解了 Immer ，下面将对 Immer 的常用 api 分别进行介绍。</p>
+
+        <h2 id="概念说明"   >
+          <a href="#概念说明" class="heading-link"><i class="fas fa-link"></i></a><a href="#概念说明" class="headerlink" title="概念说明"></a>概念说明</h2>
+      <p>Immer 涉及概念不多，在此将涉及到的概念先行罗列出来，阅读本文章过程中遇到不明白的概念，可以随时来此处查阅。</p>
+<ul>
+<li><p>currentState<br>被操作对象的最初状态</p>
+</li>
+<li><p>draftState<br>根据 currentState 生成的草稿状态，它是 currentState 的代理，对 draftState 所做的任何修改都将被记录并用于生成 nextState 。在此过程中，currentState 将不受影响</p>
+</li>
+<li><p>nextState<br>根据 draftState 生成的最终状态</p>
+</li>
+<li><p>produce 生产<br>用来生成 nextState 或 producer 的函数</p>
+</li>
+<li><p>producer 生产者<br>通过 produce 生成，用来生产 nextState ，每次执行相同的操作</p>
+</li>
+<li><p>recipe 生产机器<br>用来操作 draftState 的函数</p>
+</li>
+</ul>
+
+        <h2 id="常用-api-介绍"   >
+          <a href="#常用-api-介绍" class="heading-link"><i class="fas fa-link"></i></a><a href="#常用-api-介绍" class="headerlink" title="常用 api 介绍"></a>常用 api 介绍</h2>
+      <p>使用 Immer 前，请确认将 immer 包引入到模块中</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> produce <span class="keyword">from</span> <span class="string">&quot;immer&quot;</span>;</span><br></pre></td></tr></table></div></figure>
+
+<p>or</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; produce &#125; <span class="keyword">from</span> <span class="string">&quot;immer&quot;</span>;</span><br></pre></td></tr></table></div></figure>
+
+<p>这两种引用方式，produce 是完全相同的</p>
+
+        <h3 id="produce"   >
+          <a href="#produce" class="heading-link"><i class="fas fa-link"></i></a><a href="#produce" class="headerlink" title="produce"></a>produce</h3>
+      <blockquote>
+<p>备注：出现<code>PatchListener</code>先行跳过，后面章节会做介绍</p>
+</blockquote>
+<p><strong>第 1 种使用方式</strong>：</p>
+<p>语法：<br><code>produce(currentState, recipe: (draftState) =&gt; void | draftState, ?PatchListener): nextState</code></p>
+<p>例子 1：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> nextState = <span class="title function_">produce</span>(currentState, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;&#125;);</span><br><span class="line"></span><br><span class="line">currentState === nextState; <span class="comment">// true</span></span><br></pre></td></tr></table></div></figure>
+
+<p>例子 2：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> currentState = &#123;</span><br><span class="line">  <span class="attr">a</span>: [],</span><br><span class="line">  <span class="attr">p</span>: &#123;</span><br><span class="line">    <span class="attr">x</span>: <span class="number">1</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> nextState = <span class="title function_">produce</span>(currentState, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">a</span>.<span class="title function_">push</span>(<span class="number">2</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">currentState === nextState; <span class="comment">// false</span></span><br><span class="line">currentState.<span class="property">a</span> === nextState.<span class="property">a</span>; <span class="comment">// false</span></span><br><span class="line">currentState.<span class="property">p</span> === nextState.<span class="property">p</span>; <span class="comment">// true</span></span><br></pre></td></tr></table></div></figure>
+
+<p>由此可见，对 draftState 的修改都会反映到 nextState 上。而 Immer 使用的结构是共享的，nextState 在结构上与 currentState 共享未修改的部分，共享效果如图(借用的一篇 Immutable 文章中的动图，侵删)：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/1677dc8dba33def4_tplv-t2oaga2asx-zoom-in-crop-mark_4536_0_0_0.awebp"></p>
+<p><strong>自动冻结功能</strong></p>
+<p>Immer 还在内部做了一件很巧妙的事情，那就是通过 produce 生成的 nextState 是被冻结（freeze）的，（Immer 内部使用<code>Object.freeze</code>方法，只冻结 nextState 跟 currentState 相比修改的部分），这样，当直接修改 nextState 时，将会报错。这使得 nextState 成为了真正的不可变数据。</p>
+<p>示例：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> currentState = &#123;</span><br><span class="line">  <span class="attr">p</span>: &#123;</span><br><span class="line">    <span class="attr">x</span>: [<span class="number">2</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">const</span> nextState = <span class="title function_">produce</span>(currentState, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">p</span>.<span class="property">x</span>.<span class="title function_">push</span>(<span class="number">3</span>);</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nextState.<span class="property">p</span>.<span class="property">x</span>); <span class="comment">// [2, 3]</span></span><br><span class="line">nextState.<span class="property">p</span>.<span class="property">x</span> = <span class="number">4</span>;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nextState.<span class="property">p</span>.<span class="property">x</span>); <span class="comment">// [2, 3]</span></span><br><span class="line">nextState.<span class="property">p</span>.<span class="property">x</span>.<span class="title function_">push</span>(<span class="number">5</span>); <span class="comment">// 报错</span></span><br></pre></td></tr></table></div></figure>
+
+<p><strong>第 2 种使用方式</strong><br>利用高阶函数的特点，生成一个生产者 producer</p>
+<p>语法：<br><code>produce(recipe: (draftState) =&gt; void | draftState, ?PatchListener)(currentState): nextState</code></p>
+<p>例子：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> producer = <span class="title function_">produce</span>(<span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">x</span> = <span class="number">2</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">let</span> nextState = <span class="title function_">producer</span>(currentState);</span><br></pre></td></tr></table></div></figure>
+
+<p><strong>recipe 的返回值</strong><br>recipe 是否有返回值，nextState 的生成过程不同：<br>recipe 没有返回值时：nextState 根据 draftState 生成；<br>recipe 有返回值时：nextState 根据 recipe 函数的返回值生成；</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> nextState = <span class="title function_">produce</span>(currentState, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">x</span>: <span class="number">5</span>,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(nextState); <span class="comment">// &#123;x: 5&#125;</span></span><br></pre></td></tr></table></div></figure>
+
+<p>此时，nextState 不再是通过 draftState 生成，而是通过 recipe 的返回值生成。</p>
+<p><strong>recipe 中的 this</strong></p>
+<p>recipe 函数内部的 this 指向 draftState ，也就是修改 this 与修改 recipe 的参数 draftState ，效果是一样的。</p>
+<p><strong>注意：此处的 recipe 函数不能是箭头函数，如果是箭头函数，<code>this</code>就无法指向 draftState 了</strong></p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">produce</span>(currentState, <span class="keyword">function</span> (<span class="params">draftState</span>) &#123;</span><br><span class="line">  <span class="comment">// 此处，this 指向 draftState</span></span><br><span class="line">  draftState === <span class="variable language_">this</span>; <span class="comment">// true</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+
+        <h3 id="patch-补丁功能"   >
+          <a href="#patch-补丁功能" class="heading-link"><i class="fas fa-link"></i></a><a href="#patch-补丁功能" class="headerlink" title="patch 补丁功能"></a>patch 补丁功能</h3>
+      <p>通过此功能，可以方便进行详细的代码调试和跟踪，可以知道 draftState 的每次修改，还可以实现时间旅行。</p>
+<p>Immer 中，一个 patch 对象如下:</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Patch</span> &#123;</span><br><span class="line">  <span class="attr">op</span>: <span class="string">&quot;replace&quot;</span> | <span class="string">&quot;remove&quot;</span> | <span class="string">&quot;add&quot;</span>; <span class="comment">// 一次更改的动作类型</span></span><br><span class="line">  <span class="attr">path</span>: (<span class="built_in">string</span> | <span class="built_in">number</span>)[]; <span class="comment">// 此属性指从树根到被更改树杈的路径</span></span><br><span class="line">  value?: <span class="built_in">any</span>; <span class="comment">// op 为 replace、add 时，才有此属性，表示新的赋值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>语法：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">produce</span>(</span><br><span class="line">  currentState,</span><br><span class="line">  recipe,</span><br><span class="line">  <span class="comment">// 通过 patchListener 函数，暴露正向和反向的补丁数组</span></span><br><span class="line">  <span class="attr">patchListener</span>: <span class="function">(<span class="params">patches: Patch[], inversePatches: Patch[]</span>) =&gt;</span> <span class="built_in">void</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="title function_">applyPatches</span>(currentState, <span class="attr">changes</span>: (patches | inversePatches)[]): nextState</span><br></pre></td></tr></table></div></figure>
+
+<p>例子：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> produce, &#123; applyPatches &#125; <span class="keyword">from</span> <span class="string">&quot;immer&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> state = &#123;</span><br><span class="line">  <span class="attr">x</span>: <span class="number">1</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> replaces = [];</span><br><span class="line"><span class="keyword">let</span> inverseReplaces = [];</span><br><span class="line"></span><br><span class="line">state = <span class="title function_">produce</span>(</span><br><span class="line">  state,</span><br><span class="line">  <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">    draftState.<span class="property">x</span> = <span class="number">2</span>;</span><br><span class="line">    draftState.<span class="property">y</span> = <span class="number">2</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="function">(<span class="params">patches, inversePatches</span>) =&gt;</span> &#123;</span><br><span class="line">    replaces = patches.<span class="title function_">filter</span>(<span class="function">(<span class="params">patch</span>) =&gt;</span> patch.<span class="property">op</span> === <span class="string">&quot;replace&quot;</span>);</span><br><span class="line">    inverseReplaces = inversePatches.<span class="title function_">filter</span>(<span class="function">(<span class="params">patch</span>) =&gt;</span> patch.<span class="property">op</span> === <span class="string">&quot;replace&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">state = <span class="title function_">produce</span>(state, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">x</span> = <span class="number">3</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;state1&quot;</span>, state); <span class="comment">// &#123; x: 3, y: 2 &#125;</span></span><br><span class="line"></span><br><span class="line">state = <span class="title function_">applyPatches</span>(state, replaces);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;state2&quot;</span>, state); <span class="comment">// &#123; x: 2, y: 2 &#125;</span></span><br><span class="line"></span><br><span class="line">state = <span class="title function_">produce</span>(state, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">  draftState.<span class="property">x</span> = <span class="number">4</span>;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;state3&quot;</span>, state); <span class="comment">// &#123; x: 4, y: 2 &#125;</span></span><br><span class="line"></span><br><span class="line">state = <span class="title function_">applyPatches</span>(state, inverseReplaces);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;state4&quot;</span>, state); <span class="comment">// &#123; x: 1, y: 2 &#125;</span></span><br></pre></td></tr></table></div></figure>
+
+<p><code>state.x</code>的值 4 次打印结果分别是：3、2、4、1，实现了时间旅行，<br>可以分别打印<code>patches</code>和<code>inversePatches</code>看下，</p>
+<p><code>patches</code>数据如下：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">op</span>: <span class="string">&quot;replace&quot;</span>,</span><br><span class="line">    <span class="attr">path</span>: [<span class="string">&quot;x&quot;</span>],</span><br><span class="line">    <span class="attr">value</span>: <span class="number">2</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">op</span>: <span class="string">&quot;add&quot;</span>,</span><br><span class="line">    <span class="attr">path</span>: [<span class="string">&quot;y&quot;</span>],</span><br><span class="line">    <span class="attr">value</span>: <span class="number">2</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">];</span><br></pre></td></tr></table></div></figure>
+
+<p>inversePatches 数据如下：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">op</span>: <span class="string">&quot;replace&quot;</span>,</span><br><span class="line">    <span class="attr">path</span>: [<span class="string">&quot;x&quot;</span>],</span><br><span class="line">    <span class="attr">value</span>: <span class="number">1</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">op</span>: <span class="string">&quot;remove&quot;</span>,</span><br><span class="line">    <span class="attr">path</span>: [<span class="string">&quot;y&quot;</span>],</span><br><span class="line">  &#125;,</span><br><span class="line">];</span><br></pre></td></tr></table></div></figure>
+
+<p>可见，<code>patchListener</code>内部对数据操作做了记录，并分别存储为正向操作记录和反向操作记录，供我们使用。</p>
+<p>至此，Immer 的常用功能和 api 我们就介绍完了。</p>
+<p>接下来，我们看如何用 Immer ，提高 React 、Redux 项目的开发效率。</p>
+
+        <h1 id="用-immer-优化-react-项目的探索"   >
+          <a href="#用-immer-优化-react-项目的探索" class="heading-link"><i class="fas fa-link"></i></a><a href="#用-immer-优化-react-项目的探索" class="headerlink" title="用 immer 优化 react 项目的探索"></a>用 immer 优化 react 项目的探索</h1>
+      <p>首先定义一个 state 对象，后面的例子使用到变量 state 或访问 this.state 时，如无特殊声明，都是指这个 state 对象</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">state = &#123;</span><br><span class="line">  <span class="attr">members</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">name</span>: <span class="string">&quot;ronffy&quot;</span>,</span><br><span class="line">      <span class="attr">age</span>: <span class="number">30</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+
+        <h2 id="抛出需求"   >
+          <a href="#抛出需求" class="heading-link"><i class="fas fa-link"></i></a><a href="#抛出需求" class="headerlink" title="抛出需求"></a>抛出需求</h2>
+      <p>就上面定义的<code>state</code>，我们先抛一个需求出来，好让后面的讲解有的放矢：<br><strong>members 成员中的第 1 个成员，年龄增加 1 岁</strong></p>
+
+        <h2 id="优化-setState-方法"   >
+          <a href="#优化-setState-方法" class="heading-link"><i class="fas fa-link"></i></a><a href="#优化-setState-方法" class="headerlink" title="优化 setState 方法"></a>优化 setState 方法</h2>
+      
+        <h3 id="错误示例"   >
+          <a href="#错误示例" class="heading-link"><i class="fas fa-link"></i></a><a href="#错误示例" class="headerlink" title="错误示例"></a>错误示例</h3>
+      <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="property">state</span>.<span class="property">members</span>[<span class="number">0</span>].<span class="property">age</span>++;</span><br></pre></td></tr></table></div></figure>
+
+<p>只所以有的新手同学会犯这样的错误，很大原因是这样操作实在是太方便了，以至于忘记了操作 state 的规则。</p>
+<p>下面看下正确的实现方法</p>
+
+        <h3 id="setState-的第-1-种实现方法"   >
+          <a href="#setState-的第-1-种实现方法" class="heading-link"><i class="fas fa-link"></i></a><a href="#setState-的第-1-种实现方法" class="headerlink" title="setState 的第 1 种实现方法"></a>setState 的第 1 种实现方法</h3>
+      <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123; members &#125; = <span class="variable language_">this</span>.<span class="property">state</span>;</span><br><span class="line"><span class="variable language_">this</span>.<span class="title function_">setState</span>(&#123;</span><br><span class="line">  <span class="attr">members</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      ...members[<span class="number">0</span>],</span><br><span class="line">      <span class="attr">age</span>: members[<span class="number">0</span>].<span class="property">age</span> + <span class="number">1</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    ...members.<span class="title function_">slice</span>(<span class="number">1</span>),</span><br><span class="line">  ],</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+
+        <h3 id="setState-的第-2-种实现方法"   >
+          <a href="#setState-的第-2-种实现方法" class="heading-link"><i class="fas fa-link"></i></a><a href="#setState-的第-2-种实现方法" class="headerlink" title="setState 的第 2 种实现方法"></a>setState 的第 2 种实现方法</h3>
+      <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">setState</span>(<span class="function">(<span class="params">state</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; members &#125; = state;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">members</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        ...members[<span class="number">0</span>],</span><br><span class="line">        <span class="attr">age</span>: members[<span class="number">0</span>].<span class="property">age</span> + <span class="number">1</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">      ...members.<span class="title function_">slice</span>(<span class="number">1</span>),</span><br><span class="line">    ],</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>以上 2 种实现方式，就是<code>setState</code>的两种使用方法，想必大家都不陌生。接下来看下，如果用 Immer 解决，会有怎样的烟火？</p>
+
+        <h3 id="用-immer-更新-state"   >
+          <a href="#用-immer-更新-state" class="heading-link"><i class="fas fa-link"></i></a><a href="#用-immer-更新-state" class="headerlink" title="用 immer 更新 state"></a>用 immer 更新 state</h3>
+      <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">this</span>.<span class="title function_">setState</span>(</span><br><span class="line">  <span class="title function_">produce</span>(<span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">    draftState.<span class="property">members</span>[<span class="number">0</span>].<span class="property">age</span>++;</span><br><span class="line">  &#125;)</span><br><span class="line">);</span><br></pre></td></tr></table></div></figure>
+
+<p>是不是立刻代码量就少了很多，而且更易于阅读。</p>
+
+        <h2 id="优化-reducer"   >
+          <a href="#优化-reducer" class="heading-link"><i class="fas fa-link"></i></a><a href="#优化-reducer" class="headerlink" title="优化 reducer"></a>优化 reducer</h2>
+      
+        <h3 id="immer-的-produce-的拓展用法"   >
+          <a href="#immer-的-produce-的拓展用法" class="heading-link"><i class="fas fa-link"></i></a><a href="#immer-的-produce-的拓展用法" class="headerlink" title="immer 的 produce 的拓展用法"></a>immer 的 produce 的拓展用法</h3>
+      <p>在开始正式探索之前，我们先来看下 produce 第 2 种使用方式的拓展用法：<br>例子：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> producer = <span class="title function_">produce</span>(<span class="function">(<span class="params">draftState, arg</span>) =&gt;</span> &#123;</span><br><span class="line">  obj === arg; <span class="comment">// true</span></span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">let</span> nextState = <span class="title function_">producer</span>(currentState, obj);</span><br></pre></td></tr></table></div></figure>
+
+<p>相比 produce 第 2 种使用方式的例子，多定义了一个<code>obj</code>对象，并将其作为 producer 方法的第 2 个参数传了进去；可以看到，<code>produce</code>内的 <code>recipe</code>回调函数的第 2 个参数与<code>obj</code>对象是指向同一块内存。</p>
+<p>ok，我们在知道了 produce 的这种拓展用法后，看看能够在 Redux 中发挥什么功效?</p>
+
+        <h3 id="普通-reducer-怎样解决上面抛出的需求"   >
+          <a href="#普通-reducer-怎样解决上面抛出的需求" class="heading-link"><i class="fas fa-link"></i></a><a href="#普通-reducer-怎样解决上面抛出的需求" class="headerlink" title="普通 reducer 怎样解决上面抛出的需求"></a>普通 reducer 怎样解决上面抛出的需求</h3>
+      <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">reducer</span> = (<span class="params">state, action</span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;ADD_AGE&quot;</span>:</span><br><span class="line">      <span class="keyword">const</span> &#123; members &#125; = state;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        ...state,</span><br><span class="line">        <span class="attr">members</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            ...members[<span class="number">0</span>],</span><br><span class="line">            <span class="attr">age</span>: members[<span class="number">0</span>].<span class="property">age</span> + <span class="number">1</span>,</span><br><span class="line">          &#125;,</span><br><span class="line">          ...members.<span class="title function_">slice</span>(<span class="number">1</span>),</span><br><span class="line">        ],</span><br><span class="line">      &#125;;</span><br><span class="line">    <span class="attr">default</span>:</span><br><span class="line">      <span class="keyword">return</span> state;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+
+        <h3 id="集合-immer-reducer-可以怎样写"   >
+          <a href="#集合-immer-reducer-可以怎样写" class="heading-link"><i class="fas fa-link"></i></a><a href="#集合-immer-reducer-可以怎样写" class="headerlink" title="集合 immer,reducer 可以怎样写"></a>集合 immer,reducer 可以怎样写</h3>
+      <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">reducer</span> = (<span class="params">state, action</span>) =&gt;</span><br><span class="line">  <span class="title function_">produce</span>(state, <span class="function">(<span class="params">draftState</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">&quot;ADD_AGE&quot;</span>:</span><br><span class="line">        draftState.<span class="property">members</span>[<span class="number">0</span>].<span class="property">age</span>++;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>可以看到，通过 produce ，我们的代码量已经精简了很多。</p>
+<p>不过，仔细观察不难发现，利用 produce 能够制造 producer 的特点，代码还能更优雅：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> reducer = <span class="title function_">produce</span>(<span class="function">(<span class="params">draftState, action</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (action.<span class="property">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&quot;ADD_AGE&quot;</span>:</span><br><span class="line">      draftState.<span class="property">members</span>[<span class="number">0</span>].<span class="property">age</span>++;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>好了，至此，Immer 优化 reducer 的方法也讲解完毕。Immer 的使用非常灵活，而且还有一些其他拓展 api ，多多研究，相信你还可以发现 Immer 更多其他的妙用！</p>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ 本文结束，感谢您的阅读 ------</div></div><nav class="post-paginator paginator"><div class="paginator-next"><a class="paginator-next__link" href="/Flutter%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%EF%BC%88%E4%B8%89%EF%BC%89-%20Element/"><span class="paginator-prev__text">Flutter 源码解析（三）-Element</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">文章目录</span><span class="sidebar-nav-ov">站点概览</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">
+          前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">
+          数据处理存在的问题</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B%E5%AF%B9%E8%B1%A1%E8%A2%AB%E4%BF%AE%E6%94%B9%E7%9A%84%E5%8A%9E%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">
+          解决引用类型对象被修改的办法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#immer-%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D"><span class="toc-number">4.</span> <span class="toc-text">
+          immer 功能介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-immer"><span class="toc-number">4.1.</span> <span class="toc-text">
+          安装 immer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#immer-%E5%A6%82%E4%BD%95-fix-%E6%8E%89%E9%82%A3%E4%BA%9B%E4%B8%8D%E7%88%BD%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">4.2.</span> <span class="toc-text">
+          immer 如何 fix 掉那些不爽的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E8%AF%B4%E6%98%8E"><span class="toc-number">4.3.</span> <span class="toc-text">
+          概念说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8-api-%E4%BB%8B%E7%BB%8D"><span class="toc-number">4.4.</span> <span class="toc-text">
+          常用 api 介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#produce"><span class="toc-number">4.4.1.</span> <span class="toc-text">
+          produce</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#patch-%E8%A1%A5%E4%B8%81%E5%8A%9F%E8%83%BD"><span class="toc-number">4.4.2.</span> <span class="toc-text">
+          patch 补丁功能</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8-immer-%E4%BC%98%E5%8C%96-react-%E9%A1%B9%E7%9B%AE%E7%9A%84%E6%8E%A2%E7%B4%A2"><span class="toc-number">5.</span> <span class="toc-text">
+          用 immer 优化 react 项目的探索</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%9B%E5%87%BA%E9%9C%80%E6%B1%82"><span class="toc-number">5.1.</span> <span class="toc-text">
+          抛出需求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96-setState-%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.</span> <span class="toc-text">
+          优化 setState 方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E7%A4%BA%E4%BE%8B"><span class="toc-number">5.2.1.</span> <span class="toc-text">
+          错误示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setState-%E7%9A%84%E7%AC%AC-1-%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.2.</span> <span class="toc-text">
+          setState 的第 1 种实现方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setState-%E7%9A%84%E7%AC%AC-2-%E7%A7%8D%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%B3%95"><span class="toc-number">5.2.3.</span> <span class="toc-text">
+          setState 的第 2 种实现方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8-immer-%E6%9B%B4%E6%96%B0-state"><span class="toc-number">5.2.4.</span> <span class="toc-text">
+          用 immer 更新 state</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96-reducer"><span class="toc-number">5.3.</span> <span class="toc-text">
+          优化 reducer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#immer-%E7%9A%84-produce-%E7%9A%84%E6%8B%93%E5%B1%95%E7%94%A8%E6%B3%95"><span class="toc-number">5.3.1.</span> <span class="toc-text">
+          immer 的 produce 的拓展用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%99%AE%E9%80%9A-reducer-%E6%80%8E%E6%A0%B7%E8%A7%A3%E5%86%B3%E4%B8%8A%E9%9D%A2%E6%8A%9B%E5%87%BA%E7%9A%84%E9%9C%80%E6%B1%82"><span class="toc-number">5.3.2.</span> <span class="toc-text">
+          普通 reducer 怎样解决上面抛出的需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E5%90%88-immer-reducer-%E5%8F%AF%E4%BB%A5%E6%80%8E%E6%A0%B7%E5%86%99"><span class="toc-number">5.3.3.</span> <span class="toc-text">
+          集合 immer,reducer 可以怎样写</span></a></li></ol></li></ol></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/stun-logo.svg" alt="avatar"></div><p class="sidebar-ov-author__text">Keep studying, Keep Creating</p></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">你已阅读了 </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>由 <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> 强力驱动</span><span> v6.3.0</span><span class="footer__devider">|</span><span>主题 - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
