@@ -1,7 +1,7 @@
 ---
 title: immer.js在Redux项目中的实践
 date: 2021-04-01 15:41:23
-tags: React
+tags: [React]
 categories: 前端
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: 从一道 promise 题目来深入理解执行过程
 date: 2020-09-21 09:35:05
-tags: 面试
+tags: [javascript, 面试]
 categories: 前端
 ---
 

@@ -1,7 +1,8 @@
 ---
 title: b站在用的webp是什么？怎么用？
 date: 2022-08-21 16:13:15
-tags:
+tags: 图片
+categories: 前端
 ---
 
 打开控制台，`ctrl + c`看一下 b 站图片的后缀/格式，发现都是`.webp`后缀了。
