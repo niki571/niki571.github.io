@@ -9,7 +9,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/f6dd618d1c1642a6bbec25ed82c0a408_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp">
 <meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/22a64ff368474815b9cbc58fefd755a8_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp">
 <meta property="article:published_time" content="2021-04-15T11:56:12.000Z">
-<meta property="article:modified_time" content="2023-02-21T02:00:57.085Z">
+<meta property="article:modified_time" content="2023-02-21T04:52:35.652Z">
 <meta property="article:author" content="WuQianying">
 <meta property="article:tag" content="React">
 <meta name="twitter:card" content="summary">
@@ -46,6 +46,8 @@ window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></he
         <h2 id="Hook"   >
           <a href="#Hook" class="heading-link"><i class="fas fa-link"></i></a><a href="#Hook" class="headerlink" title="Hook"></a>Hook</h2>
       <p>每一个 hooks 方法都会生成一个类型为 Hook 的对象，用来存储一些信息，前面提到过函数组件 fiber 中的 memoizedState 会存储 hooks 链表，每个链表结点的结构就是 Hook。</p>
+<span id="more"></span>
+
 <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// packages/react-reconciler/src/ReactFiberHooks.old.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> type <span class="title class_">Hook</span> = &#123;|</span><br><span class="line">  <span class="attr">memoizedState</span>: any, <span class="comment">// 上次渲染时所用的 state</span></span><br><span class="line">  <span class="attr">baseState</span>: any, <span class="comment">// 已处理的 update 计算出的 state</span></span><br><span class="line">  <span class="attr">baseQueue</span>: <span class="title class_">Update</span>&lt;any, any&gt; | <span class="literal">null</span>, <span class="comment">// 未处理的 update 队列（一般是上一轮渲染未完成的 update）</span></span><br><span class="line">  <span class="attr">queue</span>: <span class="title class_">UpdateQueue</span>&lt;any, any&gt; | <span class="literal">null</span>, <span class="comment">// 当前出发的 update 队列</span></span><br><span class="line">  <span class="attr">next</span>: <span class="title class_">Hook</span> | <span class="literal">null</span>, <span class="comment">// 指向下一个 hook，形成链表结构</span></span><br><span class="line">|&#125;;</span><br></pre></td></tr></table></div></figure>
 
 <p>举个例子，我们通过函数组件使用了两个 useState hooks：</p>
