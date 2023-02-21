@@ -32,9 +32,6 @@ abbr[title] {
 b,
 strong {
   font-weight: bolder;
-  color: #df5b5b;
-  background-color: #f5efef;
-  padding: 0 0.3em;
 }
 code,
 kbd,
@@ -183,9 +180,6 @@ abbr[title] {
 b,
 strong {
   font-weight: bolder;
-  color: #df5b5b;
-  background-color: #f5efef;
-  padding: 0 0.3em;
 }
 code,
 kbd,
@@ -440,7 +434,7 @@ code {
   padding: 1px 5px;
   font-family: 'Source Code Pro', Consolas, Menlo, Monaco, 'Courier New', monospace;
   font-size: 0.95em;
-  color: var(--color-gray-700);
+  color: #df5b5b;
   background-color: var(--color-gray-200);
 }
 dt {

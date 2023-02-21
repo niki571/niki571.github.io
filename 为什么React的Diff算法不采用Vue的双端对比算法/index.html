@@ -1,0 +1,337 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="前言       都说“双端对比算法”，那么双端对比算法，到底是怎么样的呢？跟 React 中的 Diff 算法又有什么不同呢？ 要了解这些，我们先了解 React 中的 Diff 算法，然后再了解 Vue3 中的 Diff 算法，最后讲一下 Vue2 中的 Diff 算法，才能去比较一下他们的区别。 最后讲一下为什么 Vue 中不需要使用 Fiber 架构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么React的Diff算法不采用Vue的双端对比算法">
+<meta property="og:url" content="https://niki571.github.io/%E4%B8%BA%E4%BB%80%E4%B9%88React%E7%9A%84Diff%E7%AE%97%E6%B3%95%E4%B8%8D%E9%87%87%E7%94%A8Vue%E7%9A%84%E5%8F%8C%E7%AB%AF%E5%AF%B9%E6%AF%94%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="前言       都说“双端对比算法”，那么双端对比算法，到底是怎么样的呢？跟 React 中的 Diff 算法又有什么不同呢？ 要了解这些，我们先了解 React 中的 Diff 算法，然后再了解 Vue3 中的 Diff 算法，最后讲一下 Vue2 中的 Diff 算法，才能去比较一下他们的区别。 最后讲一下为什么 Vue 中不需要使用 Fiber 架构">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/1a288abba50a46b28fa887b080ad8828_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/16b1e863962145b697c2ca46a0b3f78e_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/c64e51345d234cac87538fa2c980ae9f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/c47d858bbaea45dc85a33fccd08166f8_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/759a187018fc42cfb6a03ca305558815_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/42ffcd9248b849d7be239e8c6c3f2f04_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/3c94f4eae88347c593a6ccdd0297820d_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/b7eda9e4bd00443ca4d703f4aaaffc1b_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/7cd0844cbe0641a68046416a0981efdd_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp">
+<meta property="article:published_time" content="2021-05-03T07:59:22.000Z">
+<meta property="article:modified_time" content="2023-02-21T02:31:10.154Z">
+<meta property="article:author" content="WuQianying">
+<meta property="article:tag" content="React">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/1a288abba50a46b28fa887b080ad8828_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"><title>为什么React的Diff算法不采用Vue的双端对比算法 | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/%E4%B8%BA%E4%BB%80%E4%B9%88React%E7%9A%84Diff%E7%AE%97%E6%B3%95%E4%B8%8D%E9%87%87%E7%94%A8Vue%E7%9A%84%E5%8F%8C%E7%AB%AF%E5%AF%B9%E6%AF%94%E7%AE%97%E6%B3%95/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":true},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"Copy","copySuccess":"Copy Success","copyError":"Copy Error"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">为什么React的Diff算法不采用Vue的双端对比算法</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">Created</span><span class="post-meta-item__value">2021-05-03</span></span><span class="post-meta-item post-meta-item--updatetime"><span class="post-meta-item__icon"><i class="far fa-calendar-check"></i></span><span class="post-meta-item__info">Updated</span><span class="post-meta-item__value">2023-02-21</span></span></div></header><div class="post-body">
+        <h1 id="前言"   >
+          <a href="#前言" class="heading-link"><i class="fas fa-link"></i></a><a href="#前言" class="headerlink" title="前言"></a>前言</h1>
+      <p>都说“双端对比算法”，那么双端对比算法，到底是怎么样的呢？跟 React 中的 Diff 算法又有什么不同呢？</p>
+<p>要了解这些，我们先了解 React 中的 Diff 算法，然后再了解 Vue3 中的 Diff 算法，最后讲一下 Vue2 中的 Diff 算法，才能去比较一下他们的区别。</p>
+<p>最后讲一下为什么 Vue 中不需要使用 Fiber 架构。</p>
+
+        <h1 id="React-官方的解析"   >
+          <a href="#React-官方的解析" class="heading-link"><i class="fas fa-link"></i></a><a href="#React-官方的解析" class="headerlink" title="React 官方的解析"></a>React 官方的解析</h1>
+      <p>其实为什么 React 不采用 Vue 的双端对比算法，React 官方已经在源码的注释里已经说明了，我们来看一下 React 官方是怎么说的。</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">reconcileChildrenArray</span>(<span class="params"></span></span><br><span class="line"><span class="params">returnFiber: Fiber,</span></span><br><span class="line"><span class="params">currentFirstChild: Fiber | <span class="literal">null</span>,</span></span><br><span class="line"><span class="params">newChildren: <span class="built_in">Array</span>&lt;\*&gt;,</span></span><br><span class="line"><span class="params">expirationTime: ExpirationTime,</span></span><br><span class="line"><span class="params"></span>): <span class="title class_">Fiber</span> | <span class="literal">null</span> &#123;</span><br><span class="line"><span class="comment">// This algorithm can&#x27;t optimize by searching from boths ends since we</span></span><br><span class="line"><span class="comment">// don&#x27;t have backpointers on fibers. I&#x27;m trying to see how far we can get</span></span><br><span class="line"><span class="comment">// with that model. If it ends up not being worth the tradeoffs, we can</span></span><br><span class="line"><span class="comment">// add it later.</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// Even with a two ended optimization, we&#x27;d want to optimize for the case</span></span><br><span class="line">    <span class="comment">// where there are few changes and brute force the comparison instead of</span></span><br><span class="line">    <span class="comment">// going for the Map. It&#x27;d like to explore hitting that path first in</span></span><br><span class="line">    <span class="comment">// forward-only mode and only go for the Map once we notice that we need</span></span><br><span class="line">    <span class="comment">// lots of look ahead. This doesn&#x27;t handle reversal as well as two ended</span></span><br><span class="line">    <span class="comment">// search but that&#x27;s unusual. Besides, for the two ended optimization to</span></span><br><span class="line">    <span class="comment">// work on Iterables, we&#x27;d need to copy the whole set.</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// In this first iteration, we&#x27;ll just live with hitting the bad case</span></span><br><span class="line">    <span class="comment">// (adding everything to a Map) in for every insert/move.</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// If you change this code, also update reconcileChildrenIterator() which</span></span><br><span class="line">    <span class="comment">// uses the same algorithm.</span></span><br><span class="line"></span><br><span class="line">｝</span><br></pre></td></tr></table></div></figure>
+
+<p>大概的意思就是说：</p>
+<p>React 不能通过双端对比进行 Diff 算法优化是因为目前 Fiber 上没有设置反向链表，而且想知道就目前这种方案能持续多久，如果目前这种模式不理想的话，那么也可以增加双端对比算法。</p>
+<p>即使是双端对比算法，我们也要对这种情况进行优化，我们应该使用 Map 这种数据结构方案去替代原来那种几乎没有什么变化也进行暴力比较的方案。它第一次搜索循环是通过 forward-only 这种模式（就是只从左向右查找），（第一次循环可能还没有结束，还有节点没有比对的时候）如果还要继续向前循环查找那么就要通过 Map 这种数据类型了。（就目前这个单向链表的数据结构，如果采用）双端对比查找算法比较难控制它反向查找的，但它确实是一种成功的算法。此外，双端对比算法的实现也在我们的工作迭代当中。</p>
+<p>第一次迭代，我们就先将就使用这种不好的方案吧，每次新增&#x2F;移动都要添加所有的数据到一个 Map 的数据类型对象中。</p>
+<p>React 的官方虽然解析了，但我们想要彻底理解到底为什么，还是要去详细了解 React 的 Diff 算法是怎么样的。在了解 React Diff 算法之前，我们首先要了解什么是 Fiber，为什么 React 中要使用 Fiber？</p>
+
+        <h1 id="Fiber-的结构"   >
+          <a href="#Fiber-的结构" class="heading-link"><i class="fas fa-link"></i></a><a href="#Fiber-的结构" class="headerlink" title="Fiber 的结构"></a>Fiber 的结构</h1>
+      <p>在 React15 以前 React 的组件更新创建虚拟 DOM 和 Diff 的过程是不可中断，如果需要更新组件树层级非常深的话，在 Diff 的过程会非常占用浏览器的线程，而我们都知道浏览器执行 JavaScript 的线程和渲染真实 DOM 的线程是互斥的，也就是同一时间内，浏览器要么在执行 JavaScript 的代码运算，要么在渲染页面，如果 JavaScript 的代码运行时间过长则会造成页面卡顿。</p>
+<p>基于以上原因 React 团队在 React16 之后就改写了整个架构，将原来数组结构的虚拟 DOM，改成叫 Fiber 的一种数据结构，基于这种 Fiber 的数据结构可以实现由原来不可中断的更新过程变成异步的可中断的更新。</p>
+<p>Fiber 的数据结构主要长成以下的样子，主要通过 Fiber 的一些属性去保存组件相关的信息。</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">FiberNode</span>(<span class="params"></span></span><br><span class="line"><span class="params">  tag: WorkTag,</span></span><br><span class="line"><span class="params">  pendingProps: mixed,</span></span><br><span class="line"><span class="params">  key: <span class="literal">null</span> | string,</span></span><br><span class="line"><span class="params">  mode: TypeOfMode</span></span><br><span class="line"><span class="params"></span>) &#123;</span><br><span class="line">  <span class="comment">// 作为静态数据结构的属性</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">tag</span> = tag;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">key</span> = key;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">elementType</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">type</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">stateNode</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 用于连接其他 Fiber 节点形成 Fiber 树</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">return</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">child</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">sibling</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">index</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">ref</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 作为动态的工作单元的属性</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">pendingProps</span> = pendingProps;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">memoizedProps</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">updateQueue</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">memoizedState</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">dependencies</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">mode</span> = mode;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">effectTag</span> = <span class="title class_">NoEffect</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">nextEffect</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">firstEffect</span> = <span class="literal">null</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">lastEffect</span> = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 调度优先级相关</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">lanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">childLanes</span> = <span class="title class_">NoLanes</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 指向该 fiber 在另一次更新时对应的 fiber</span></span><br><span class="line">  <span class="variable language_">this</span>.<span class="property">alternate</span> = <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>Fiber 主要靠以下属性连成一棵树结构的数据的，也就是 Fiber 链表。</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 指向父级 Fiber 节点</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">return</span> = <span class="literal">null</span>;</span><br><span class="line"><span class="comment">// 指向子 Fiber 节点</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">child</span> = <span class="literal">null</span>;</span><br><span class="line"><span class="comment">// 指向右边第一个兄弟 Fiber 节点</span></span><br><span class="line"><span class="variable language_">this</span>.<span class="property">sibling</span> = <span class="literal">null</span>;</span><br></pre></td></tr></table></div></figure>
+
+<p>举个例子，如下的组件结构：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">App</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      i am</span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">span</span>&gt;</span>Coboy<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>对应的 Fiber 链表结构：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/1a288abba50a46b28fa887b080ad8828_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>那么以上的 Fiber 链表的数据结构有什么特点，就是任何一个位置的 Fiber 节点，都可以非常容易知道它的父 Fiber, 第一个子元素的 Fiber,和它的兄弟节点 Fiber。却不容易知道它前一个 Fiber 节点是谁，这就是 React 中单向链表 Fiber 节点的特点。也正是因为这些即便在协调的过程被中断了，再恢复协调的时候，依然知道当前的 父节点和孩子节点等信息。</p>
+<p>那么 React 是将对应组件怎么生成一个 Fiber 链表数据的呢？</p>
+
+        <h1 id="Fiber-链表的生成"   >
+          <a href="#Fiber-链表的生成" class="heading-link"><i class="fas fa-link"></i></a><a href="#Fiber-链表的生成" class="headerlink" title="Fiber 链表的生成"></a>Fiber 链表的生成</h1>
+      <p>上面的组件在经过 JSX 的编译之后，初始化的时候会生成成一个类似于 React 15 或者 Vue 那种虚拟 DOM 的数据结构。然后创建一个叫 fiberRoot 的 Fiber 节点，然后开始从 fiberRoot 这个根 Fiber 开始进行协调，生成一棵 Fiber 树，这个棵树被称为：<code>workInProgress Fiber</code>树 ，意思是正在工作的 Fiber 树，接下来我们详细了解一下具体是怎么生成一棵 Fiber 树的。要先了解 Fiber 树的生成原理才更好去理解 Fiber 树 diff 的过程。</p>
+<p>以下是一段简单版的 Fiber 链表生成的代码片段。这个协调子节点的函数接收两个参数，returnFiber 是父 Fiber，children 是这个节点的子元素的虚拟 DOM 数据。</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个协调子节点的函数接收两个参数，returnFiber 是父 Fiber，children 是这个节点的子元素的虚拟 DOM 数据。</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">reconcileChildren</span>(<span class="params">returnFiber, children</span>) &#123;</span><br><span class="line">  <span class="comment">// 如果是字符串或者数字则不创建 Fiber</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="title function_">isStringOrNumber</span>(children)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> newChildren = <span class="title function_">isArray</span>(children) ? children : [children];</span><br><span class="line">  <span class="comment">// 上一轮的 fiber 节点</span></span><br><span class="line">  <span class="keyword">let</span> previousNewFiber = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// 初次渲染（false）还是更新（true）</span></span><br><span class="line">  <span class="keyword">let</span> shouldTrackSideEffects = !!returnFiber.<span class="property">alternate</span>;</span><br><span class="line">  <span class="comment">// 老 Fiber 节点</span></span><br><span class="line">  <span class="keyword">let</span> oldFiber = returnFiber.<span class="property">alternate</span> &amp;&amp; returnFiber.<span class="property">alternate</span>.<span class="property">child</span>;</span><br><span class="line">  <span class="keyword">let</span> nextOldFiber = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// 上一次协调返回的位置</span></span><br><span class="line">  <span class="keyword">let</span> lastPlacedIndex = <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// 记录每个 fiber 节点的位置</span></span><br><span class="line">  <span class="keyword">let</span> newIdx = <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// 如果不存在老 Fiber 则是初始化的过程，进行 Fiber 链表的创建</span></span><br><span class="line">  <span class="keyword">if</span> (!oldFiber) &#123;</span><br><span class="line">    <span class="keyword">for</span> (; newIdx &lt; newChildren.<span class="property">length</span>; newIdx++) &#123;</span><br><span class="line">      <span class="comment">// 获取节点元素内容</span></span><br><span class="line">      <span class="keyword">const</span> newChild = newChildren[newIdx];</span><br><span class="line">      <span class="comment">// 如果节点为 null 则不需要创建 fiber 节点</span></span><br><span class="line">      <span class="keyword">if</span> (newChild === <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 创建新 fiber 的时候记录了关键的父 fiber 等重要信息</span></span><br><span class="line">      <span class="keyword">const</span> newFiber = <span class="title function_">createFiber</span>(newChild, returnFiber);</span><br><span class="line">      <span class="comment">// 记录当前每一个 fiber 的位置</span></span><br><span class="line">      lastPlacedIndex = <span class="title function_">placeChild</span>(</span><br><span class="line">        newFiber,</span><br><span class="line">        lastPlacedIndex,</span><br><span class="line">        newIdx,</span><br><span class="line">        shouldTrackSideEffects <span class="comment">// 初次渲染（false）还是更新（true）</span></span><br><span class="line">      );</span><br><span class="line">      <span class="comment">// 当上一轮的 fiber 节点为 null 的时候，这一轮的 fiber 就是头节点</span></span><br><span class="line">      <span class="keyword">if</span> (previousNewFiber === <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 父 fiber 的 child 就是第一个节点</span></span><br><span class="line">        returnFiber.<span class="property">child</span> = newFiber;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 如果不是第一个节点，那么就是兄弟节点</span></span><br><span class="line">        <span class="comment">// 上一轮 fiber 的兄弟节点是这一轮的 fiber 节点</span></span><br><span class="line">        previousNewFiber.<span class="property">sibling</span> = newFiber;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 记录上一轮的 fiber，既是这一轮的 fiber 便是下一轮的上一轮 fiber</span></span><br><span class="line">      previousNewFiber = newFiber;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>构建完的<code>workInProgress Fiber</code>树 会在<code>commit</code>阶段 渲染到页面。</p>
+<p>在组件状态数据发生变更的时候，会根据最新的状态数据先会生成新的虚拟 DOM，再去构建一棵新的<code>workInProgress Fiber</code>树 ，而在重新协调构建新的 Fiber 树的过程也就是 React Diff 发生的地方。接下来，我们就看看 React Diff 算法是怎么样的。</p>
+
+        <h1 id="React-的-Diff-算法"   >
+          <a href="#React-的-Diff-算法" class="heading-link"><i class="fas fa-link"></i></a><a href="#React-的-Diff-算法" class="headerlink" title="React 的 Diff 算法"></a>React 的 Diff 算法</h1>
+      <p>深度优先，有子节点，就遍历子节点，没有子节点，就找兄弟节点，没有兄弟节点，就找叔叔节点，叔叔节点也没有的话，就继续往上找，它爷爷的兄弟，如果一直没找到，就代表所有的更新任务都更新完毕了。</p>
+<p><strong>重点是在更新自己的同时需要去协调子节点，也就是传说中进行 Diff 的地方。</strong></p>
+<p>进入协调的时候它自己就是父 Fiber，它的子节点在协调之前，是刚刚通过更新的状态数据生成的最新的虚拟 DOM 数据，是个数组结构的元素数据。</p>
+<p>那么要进行更新，就肯定是以为最新的节点数据为准了，又因为最新的节点数据是一个数组，所以可以进行循环对比每一个节点，很明显这个循环是从<strong>左向右进行查找比对</strong>的。</p>
+
+        <h2 id="第一轮，常见情况的比对"   >
+          <a href="#第一轮，常见情况的比对" class="heading-link"><i class="fas fa-link"></i></a><a href="#第一轮，常见情况的比对" class="headerlink" title="第一轮，常见情况的比对"></a>第一轮，常见情况的比对</h2>
+      <p>那么第一个节点的老 Fiber 怎么拿到呢？可以通过 父 Fiber 的 child 属性拿到，这样第一个节点的老 Fiber 就拿到了，那么第二节点的老 Fiber，很明显可以通过第一个节点的老 Fiber 节点的 sibling 属性拿到，后面的以此类推。</p>
+<p>怎么比对呢？</p>
+<p>在循环的新节点虚拟 DOM 数据的时候，拿到新节点虚拟 DOM 信息，然后就去和老 Fiber 节点进行比对，如果两个节点相同则创建一个新的 Fiber 节点并复用一些老 Fiber 节点的信息，比如真实 DOM，并给这个新的 Fiber 节点打上一个 Update 的标记，代表这个节点需要更新即可。</p>
+<p>接着去更新协调位置信息。</p>
+<p>在循环的最后进行 Fiber 链表的处理：</p>
+<p>如果是头节点，则把新 Fiber 设置为父 Fiber 的 child 属性的值；<br>如果不是头节点，则把新 Fiber 设置为上一轮循环的创建的 Fiber 节点的 sibing 属性的值；更新上一轮 Fiber 变量的值，就是把这一轮的 Fiber 设置成下一轮的 Fiber;更新比对的老 Fiber 的值。</p>
+<p>如果新节点都能找到能复用的节点，则判断是否还存在老节点，有则删除。</p>
+
+        <h2 id="第二轮，不常见的情况的比对"   >
+          <a href="#第二轮，不常见的情况的比对" class="heading-link"><i class="fas fa-link"></i></a><a href="#第二轮，不常见的情况的比对" class="headerlink" title="第二轮，不常见的情况的比对"></a>第二轮，不常见的情况的比对</h2>
+      <p>如果经过第一轮比对，新节点还存在未比对的，则继续循环查找。</p>
+<p>先将剩下未比对的老 Fiber 节点全部处理成一个 老 Fiber 的 key 或老 Fiber 的 index 为 key，Fiber 节点为 value 的 Map 中，这样就可以，以 O(1) 复杂度，通过新 Fiber 的 key 去 Map 对象中查找匹配的 Fiber，找到了，则删除 Map 对象中的老 Fiber 数据，然后复用匹配到的 Fiber 数据。</p>
+<p>接下来，不管有没有匹配到都进行位置协调，记录最新的位置信息，新增的 Fiber 因为没有存在老 Fiber 而会被打上 Placement 的标记，在将来提交的阶段将会被进行新增操作。这个过程跟第一轮最后的处理是一样的。</p>
+<p>在循环的最后进行 Fiber 链表的处理：</p>
+<p>如果是头节点，则把新 Fiber 设置为父 Fiber 的 child 属性的值；<br>如果不是头节点，则把新 Fiber 设置为上一轮循环的创建的 Fiber 节点的 sibing 属性的值；更新上一轮 Fiber 变量的值，就是把这一轮的 Fiber 设置成下一轮的 Fiber；更新比对的老 Fiber 的值。</p>
+
+        <h2 id="重点如何协调更新位置信息"   >
+          <a href="#重点如何协调更新位置信息" class="heading-link"><i class="fas fa-link"></i></a><a href="#重点如何协调更新位置信息" class="headerlink" title="重点如何协调更新位置信息"></a>重点如何协调更新位置信息</h2>
+      <p>如果是初始渲染，那么协调位置就只是记录当前元素下标的位置到 Fiber 节点上。如果是更新阶段，就先判断有没有老 Fiber 节点，如果没有老 Fiber 节点，则说明该节点需要创建，就给当前新的 Fiber 节点打上一个 Placement 的标记，如果有老 Fiber 节点，则判断老 Fiber 节点的位置是否比上一次协调的返回的位置小，如果是，则说明该节点需要移动，给新 Fiber 节点打上一个 Placement 的标记，并继续返回上一次协调返回的位置；如果老 Fiber 节点的位置大或者等于上一次协调返回的位置，则说明该节点不需要进行位置移动操作，就返回老 Fiber 的位置即可。</p>
+<p>这里需要说明的一点，为什么移动和新增节点都是 Placement 的标记呢？</p>
+<p>因为我们是在协调一个子节点列表，所以不管是新增还是移动都是属于位置是需要发生变化的，所以新增和移动都是同一种操作情况。</p>
+
+        <h2 id="小结"   >
+          <a href="#小结" class="heading-link"><i class="fas fa-link"></i></a><a href="#小结" class="headerlink" title="小结"></a>小结</h2>
+      <p>总个来说，React Diff 算法分以下几个步骤：</p>
+<ol>
+<li>第一轮，从左向右新老节点进行比对查找能复用的旧节点，如果有新老节点比对不成功的，则停止这一轮的比对，并记录了停止的位置。</li>
+<li>如果第一轮比对，能把所有的新节点都比对完毕，则删除旧节点还没进行比对的节点。</li>
+<li>如果第一轮的比对，没能将所有的新节点都比对完毕，则继续从第一轮比对停止的位置继续开始循环新节点，拿每一个新节点去老节点里面进行查找，有匹配成功的则复用，没匹配成功的则在协调位置的时候打上 Placement 的标记。</li>
+<li>在所有新节点比对完毕之后，检查还有没有没进行复用的旧节点，如果有，则全部删除。</li>
+</ol>
+
+        <h1 id="图文解释-React-Diff-算法"   >
+          <a href="#图文解释-React-Diff-算法" class="heading-link"><i class="fas fa-link"></i></a><a href="#图文解释-React-Diff-算法" class="headerlink" title="图文解释 React Diff 算法"></a>图文解释 React Diff 算法</h1>
+      <p>接下来我们使用图文进行 React Diff 算法讲解，希望可以更进一步了解 React 的 Diff 算法。</p>
+
+        <h2 id="最简单的-Diff-场景"   >
+          <a href="#最简单的-Diff-场景" class="heading-link"><i class="fas fa-link"></i></a><a href="#最简单的-Diff-场景" class="headerlink" title="最简单的 Diff 场景"></a>最简单的 Diff 场景</h2>
+      <p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/16b1e863962145b697c2ca46a0b3f78e_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>上图的 Diff 场景是最简单的一种，新虚拟 DOM 从左到右都能和老 Fiber 的节点一一匹配成功，协调位置的时候，老 Fiber A 的位置是 0，默认上一次协调返回的位置也是 0，根据协调位置规则，老 Fiber 的位置不比上一次协调返回的位置小，则只需要返回老 Fiber A 的位置 0 即可；到了 B 进行协调位置的时候，老 Fiber B 位置 1 不比上一次协调返回的位置 0 小，则只需返回老 Fiber B 的位置 1 即可；到了 C 进行协调位置的时候，老 Fiber C 位置 2 不比上一次协调返回的位置 1 小，则只需要返回老 Fiber C 的位置 2 即可；</p>
+<p>最后全部的新虚拟 DOM 比对完毕，但老 Fiber 上还存在节点信息，则需要将剩下的老 Fiber 进行删除标记。</p>
+<p>接下来我们看看复杂的 Diff 场景。</p>
+
+        <h2 id="复杂的-Diff-场景"   >
+          <a href="#复杂的-Diff-场景" class="heading-link"><i class="fas fa-link"></i></a><a href="#复杂的-Diff-场景" class="headerlink" title="复杂的 Diff 场景"></a>复杂的 Diff 场景</h2>
+      <p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/c64e51345d234cac87538fa2c980ae9f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>在上图中，第一轮循环比对的时候，新虚拟节点 A 和第一个老 Fiber 节点是可以匹配的，所以就可以复用老 Fiber 的节点信息了，并且在协调的位置信息的时候，是存在老 Fiber 的，那么就去比较老 Fiber 的位置和上一次协调返回的位置进行比较（上一次协调返回的位置默认为 0），老 Fiber 的位置是等于新 Fiber 的位置，根据协调规则，位置不需要移动，返回老 Fiber 的位置信息即可，很明显这次返回的协调位置是 0。</p>
+<p>到了第二个新虚拟节点 C 的时候，C 和老 Fiber 中的 B 是不匹配的，则第一轮比对结束。</p>
+<p>第一轮比对结束之后，新虚拟 DOM 是还存在未比对的节点的，那么继续开始第二轮的比对。</p>
+<p>在第二轮比对开始之前，会先将剩下未比对的老 Fiber 节点全部处理成一个 老 Fiber 的 key 或老 Fiber 的 index 为 key，Fiber 节点为 value 的 Map 中。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/c47d858bbaea45dc85a33fccd08166f8_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>然后进行第二轮的比对。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/759a187018fc42cfb6a03ca305558815_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>虚拟 DOM C 可以通过 C 的 key 值在老 Fiber 的 Map 中找到老 Fiber C 节点，这个时候会 C 进行暂存，然后把 Map 中的 C 进行删除，再进行老 Fiber 的节点信息复用，然后去协调比对位置信息。</p>
+<p>老 Fiber C 的位置是 2，然后上一次新 Fiber A 协调比对返回的位置信息是 0，那么这一次协调的位置是老 Fiber 的位置比上一次协调返回的位置大，那么这次协调是不用标记 Placement 标记的，直接返回老 Fiber C 的位置 2。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/42ffcd9248b849d7be239e8c6c3f2f04_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>虚拟 DOM E，在老 Fiber 的 Map 中是没有匹配成功的，所以在创建 Fiber E 的时候，是没有进行老 Fiber 的复用的，去协调比对位置的时候，根据协调位置规则，没有老 Fiber，就标记 Placement 并返回上一次协调返回的位置，那么上一次 C 协调位置返回的位置信息是 2，这一次 E 协调位置依然返回 2。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/3c94f4eae88347c593a6ccdd0297820d_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>虚拟 DOM B 也在 Fiber 的 Map 中匹配成功了，那么匹配成功之后，就对老 Fiber B 进行暂存，然后删除老 Fiber B,再进行信息复用，然后又进行位置协调，老 Fiber B 的位置是 1，上一次协调返回的位置是 2，根据协调位置规则，老 Fiber 的位置小于上一次协调返回的位置，则标记 Placement 并返回上一次协调返回的位置 2。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/b7eda9e4bd00443ca4d703f4aaaffc1b_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>最后，老 Fiber 的 Map 中还存在一个 D 节点没处理，则需要对其进行删除标记操作。<br>最终新 Fiber 将被协调成下面的样子：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/7cd0844cbe0641a68046416a0981efdd_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>那么根据图片，我们又可以得出一个结论，匹配到的老 Fiber 如果和新 Fiber 相同或者在新 Fiber 位置的右边则不需要进行移动标记。</p>
+
+        <h1 id="Vue3-的-Diff-算法"   >
+          <a href="#Vue3-的-Diff-算法" class="heading-link"><i class="fas fa-link"></i></a><a href="#Vue3-的-Diff-算法" class="headerlink" title="Vue3 的 Diff 算法"></a>Vue3 的 Diff 算法</h1>
+      <p>在我看来 Vue3 的 Diff 算法是 Vue2、Vue3、React 的 Diff 算法中最复杂的一种。下面我们来简单说一下 Vue3 的 Diff 算法，只说数组和数组比对的情况。</p>
+
+        <h2 id="第一轮，常见情况的比对-1"   >
+          <a href="#第一轮，常见情况的比对-1" class="heading-link"><i class="fas fa-link"></i></a><a href="#第一轮，常见情况的比对-1" class="headerlink" title="第一轮，常见情况的比对"></a>第一轮，常见情况的比对</h2>
+      <p>首先从左往右进行比对，如果是相同的就进行更新比对，如果不相同则停止比对，并且记录停止的下标。</p>
+<p>再从右往左进行比对，如果是相同的就进行更新比对，如果不相同也停止比对，也进行记录停止的下标。</p>
+<p>通过这样左右进行比对，最后就可以把真正复杂部分进行范围锁定了。</p>
+<p>左右比对完之后，如果新节点已经比对完了，老节点列表还存在节点未比对，则删除老节点列表上的未比对的节点，如果老节点已经比对完了，新节点列表还存在未比对的节点则进行创建。</p>
+
+        <h2 id="第二轮，复杂情况的比对"   >
+          <a href="#第二轮，复杂情况的比对" class="heading-link"><i class="fas fa-link"></i></a><a href="#第二轮，复杂情况的比对" class="headerlink" title="第二轮，复杂情况的比对"></a>第二轮，复杂情况的比对</h2>
+      <p>如果新节点未比对完，老节点也未比对完，则进行最后最复杂的处理。</p>
+<p>先把剩下的新节点处理成节点的 key 为 key, 节点下标为 value 的 Map；接着初始化一个长度为剩下未比对的新节点的长度的数组 newIndexToOldIndexMap，初始化每个数组的下标的默认值为 0。再循环剩下的旧节点，通过旧节点的 key 去刚刚创建的 Map 中查找，看看旧节点有没有在新节点中，如果旧节点没有 key 则需要通过循环剩下的新节点进行查找。如果旧节点在新节点中没找到，则说明该旧节点需要进行删除。如果找到了，则把找到的新节点的下标对应存储到上述的数组 newIndexToOldIndexMap 中，然后更新比对匹配到的新老节点。</p>
+<p>把所有的旧节点比对完成后，就会得到一个刚刚收集的新节点的下标数组，然后对这个新节点的下标数组进行进行最长递增子序列查找得到一个最长递增子序列的下标数据。然后再进行循环左右对比完之后剩余新节点的下标，然后判断循环的下标是否被上述的数组 newIndexToOldIndexMap 进行收集了，如果没被收集到则说明这个新节点需要进行创建，如果已经被收集了则判断该循环的下标是否在上面计算得到的最长递增子序列中，如果不在则需要对该循环节点进行移动操作。</p>
+<p>以上就是 Vue3 Diff 算法大概过程了。</p>
+
+        <h1 id="Vue2-的-Diff-算法"   >
+          <a href="#Vue2-的-Diff-算法" class="heading-link"><i class="fas fa-link"></i></a><a href="#Vue2-的-Diff-算法" class="headerlink" title="Vue2 的 Diff 算法"></a>Vue2 的 Diff 算法</h1>
+      <p>Vue2 的 Diff 算法就是以新的虚拟 DOM 为准进行与老虚拟 DOM 的比对，继而进行各种情况的处理。大概可以分为 4 种情况：更新节点、新增节点、删除节点、移动节点位置。比对新老两个虚拟 DOM，就是通过循环，每循环到一个新节点，就去老节点列表里面找到和当前新节点相同的旧节点。如果在旧节点列表中找不到，说明当前节点是需要新增的节点，我们就需要进行创建节点并插入视图的操作；如果找到了，就做更新操作；如果找到的旧节点与新节点位置不同，则需要移动节点等。</p>
+
+        <h2 id="第一轮，简单情况的比对"   >
+          <a href="#第一轮，简单情况的比对" class="heading-link"><i class="fas fa-link"></i></a><a href="#第一轮，简单情况的比对" class="headerlink" title="第一轮，简单情况的比对"></a>第一轮，简单情况的比对</h2>
+      <p>其中为了快速查找到节点，Vue2 的 Diff 算法设置了 4 种优化策略，分别是：</p>
+<ol>
+<li>老数组的开始与新数组的开始</li>
+<li>老数组的结尾与新数组的结尾</li>
+<li>老数组的开始与新数组的结尾</li>
+<li>老数组的结尾与新数组的开始</li>
+</ol>
+<p>通过这 4 种快捷的查找方式，我们就不需要循环来查找了，只有当以上 4 种方式都查找不到的时候，再进行循环查找。</p>
+
+        <h2 id="第二轮，不常见的情况的比对-1"   >
+          <a href="#第二轮，不常见的情况的比对-1" class="heading-link"><i class="fas fa-link"></i></a><a href="#第二轮，不常见的情况的比对-1" class="headerlink" title="第二轮，不常见的情况的比对"></a>第二轮，不常见的情况的比对</h2>
+      <p>最后循环结束后需要对未处理的节点进行处理。</p>
+<p>如果是老节点列表先循环完毕，这个时候如果新节点列表还有剩余的节点，则说明这些节点都是需要新增的节点，直接把这些节点创建并插入到 DOM 中就行了。</p>
+<p>如果是新节点列表先循环完毕，这个时候如果老节点列表还有剩余节点，则说明这些节点都是要被废弃的节点，是应该被删除的节点，直接批量删除就可以了。</p>
+
+        <h1 id="React、Vue3、Vue2-的-Diff-算法对比"   >
+          <a href="#React、Vue3、Vue2-的-Diff-算法对比" class="heading-link"><i class="fas fa-link"></i></a><a href="#React、Vue3、Vue2-的-Diff-算法对比" class="headerlink" title="React、Vue3、Vue2 的 Diff 算法对比"></a>React、Vue3、Vue2 的 Diff 算法对比</h1>
+      
+        <h2 id="相同点"   >
+          <a href="#相同点" class="heading-link"><i class="fas fa-link"></i></a><a href="#相同点" class="headerlink" title="相同点"></a>相同点</h2>
+      <p>只有使用了虚拟 DOM 的这些框架，在进行更新 Diff 对比的时候，都是优先处理简单的场景，再处理复杂的场景。</p>
+<p>React 中是先处理左边部分，左边部分处理不了，再进行复杂部分的处理；Vue2 则先进行首尾、首首、尾尾部分的处理，然后再进行中间复杂部分的处理；Vue3 则先处理首尾部分，然后再处理中间复杂部分，Vue2 和 Vue3 最大的区别就是在处理中间复杂部分使用了最长递增子序列算法找出稳定序列的部分。</p>
+<p>在处理老节点部分，都需要把节点处理 key - value 的 Map 数据结构，方便在往后的比对中可以快速通过节点的 key 取到对应的节点。同样在比对两个新老节点是否相同时，key 是否相同也是非常重要的判断标准。所以不同是 React, 还是 Vue，在写动态列表的时候，都需要设置一个唯一值 key，这样在 diff 算法处理的时候性能才最大化。</p>
+<p>在移动或者创建节点的时候都使用了<code>insertBefore(newnode,existingnode)</code>这个 API：</p>
+<ol>
+<li>newnode 必需。需要插入的节点对象。</li>
+<li>existingnode 可选。在其之前插入新节点的子节点。如果未规定，则 insertBefore 方法会在结尾插入 newnode。</li>
+</ol>
+
+        <h2 id="不同点"   >
+          <a href="#不同点" class="heading-link"><i class="fas fa-link"></i></a><a href="#不同点" class="headerlink" title="不同点"></a>不同点</h2>
+      <p>对静态节点的处理不一样。</p>
+<p>由于 Vue 是通过 template 模版进行编译的，所以在编译的时候可以很好对静态节点进行分析然后进行打补丁标记，然后在 Diff 的时候，Vue2 是判断如果是静态节点则跳过过循环对比，而 Vue3 则是把整个静态节点进行提升处理，Diff 的时候是不过进入循环的，所以 Vue3 比 Vue2 的 Diff 性能更高效。而 React 因为是通过 JSX 进行编译的，是无法进行静态节点分析的，所以 React 在对静态节点处理这一块是要逊色的。</p>
+<p>Vue2 和 Vue3 的比对和更新是同步进行的，这个跟 React15 是相同的，就是在比对的过程中，如果发现了那些节点需要移动或者更新或删除，是立即执行的，也就是 React 中常讲的不可中断的更新，如果比对量过大的话，就会造成卡顿，所以 React16 起就更改为了比对和更新是异步进行的，所以 React16 以后的 Diff 是可以中断，Diff 和任务调度都是在内存中进行的，所以即便中断了，用户也不会知道。</p>
+<p>另外 Vue2 和 Vue3 都使用了双端对比算法，而 React 的 Fiber 由于是单向链表的结构，所以在 React 不设置由右向左的链表之前，都无法实现双端对比。那么双端对比目前 React 的 Diff 算法要好吗？接下来我们来看看一个例子，看看它分别在 React、Vue2、Vue3 中的是怎么处理的。</p>
+<p>比如说我们现在有以下两组新老节点：</p>
+<p>老：A, B, C, D<br>新：D, A, B, C</p>
+<p>那么我们可以看到，新老两组节点唯一的不同点就是，D 节点在新的节点中跑到开头去了，像这种情况：</p>
+<p>React 是从左向右进行比对的，在上述这种情况，React 需要把 A, B, C 三个节点分别移动到 D 节点的后面。</p>
+<p>Vue2 在进行老节点的结尾与新节点的开始比对的时候，就发现这两个节点是相同的，所以直接把老节点结尾的 D 移动到新节点开头就行了，剩下的就只进行老节点的开始与新节点的开始进行比对，就可以发现它们的位置并没有发生变化，不需要进行移动。</p>
+<p>Vue3 是没有了 Vue2 的新老首尾节点进行比较，只是从两组节点的开头和结尾进行比较，然后往中间靠拢，那么 Vue3 在进行新老节点的开始和结尾比对的时候，都没有比对成功，接下来就进行中间部分的比较，先把老节点处理成 key - value 的 Map 数据结构，然后又使用最长递增子序列算法找出其中的稳定序列部分，也就是：A, B, C，然再对新节点进行循环比对，然后就会发现新节点的 A, B, C 都在稳定序列部分，不需要进行移动，然就只对 D，进行移动即可。</p>
+<p>最后上述的例子在 Vue2 和 Vue3 中都只需要移动一个节点就可以完成 Diff 算法比对，而 React 在这种极端例子中则没办法进行很好的优化，需要进行多次节点移动操作。</p>
+
+        <h1 id="为什么-Vue-中不需要使用-Fiber"   >
+          <a href="#为什么-Vue-中不需要使用-Fiber" class="heading-link"><i class="fas fa-link"></i></a><a href="#为什么-Vue-中不需要使用-Fiber" class="headerlink" title="为什么 Vue 中不需要使用 Fiber"></a>为什么 Vue 中不需要使用 Fiber</h1>
+      <p>其实这个问题也可以叫做：为什么 Vue 不需要时间分片？对于这个问题其实尤雨溪也在英文社区里回答过，也有前端大牛翻译发布在公众号上，那么下面我也进行一下总结。</p>
+<ol>
+<li><p>首先时间分片是为了解决 CPU 进行大量计算的问题，因为 React 本身架构的问题，在默认的情况下更新会进行过多的计算，就算使用 React 提供的性能优化 API，进行设置，也会因为开发者本身的问题，依然可能存在过多计算的问题。</p>
+</li>
+<li><p>而 Vue 通过响应式依赖跟踪，在默认的情况下可以做到只进行组件树级别的更新计算，而默认下 React 是做不到的（据说 React 已经在进行这方面的优化工作了），再者 Vue 是通过 template 进行编译的，可以在编译的时候进行非常好的性能优化，比如对静态节点进行静态节点提升的优化处理，而通过 JSX 进行编译的 React 是做不到的。</p>
+</li>
+<li><p>React 为了解决更新的时候进行过多计算的问题引入了时间分片，但同时又带来了额外的计算开销，就是任务协调的计算，虽然 React 也使用最小堆等的算法进行优化，但相对 Vue 还是多了额外的性能开销，因为 Vue 没有时间分片，所以没有这方面的性能担忧。</p>
+</li>
+<li><p>根据研究表明，人类的肉眼对 100 毫秒以内的时间并不敏感，所以时间分片只对于处理超过 100 毫秒以上的计算才有很好的收益，而 Vue 的更新计算是很少出现 100 毫秒以上的计算的，所以 Vue 引入时间分片的收益并不划算。</p>
+</li>
+</ol>
+
+        <h1 id="总结"   >
+          <a href="#总结" class="heading-link"><i class="fas fa-link"></i></a><a href="#总结" class="headerlink" title="总结"></a>总结</h1>
+      <p>我们先由 “ React 的 Diff 算法为什么不采用 Vue 的双端对比的 Diff 算法？” 这个问题引出对 React 中的一些知识点的学习理解，比如什么是 Fiber，Fiber 链表是如何生成的，然后详细解析了 React Diff 算法，还对 React Diff 算法进行图文并茂解析，让我们可以更加理解 React 的 Diff 算法。其后，我们又简单介绍了 Vue3 和 Vue2 的 Diff 算法，之后对 React、Vue3、Vue2 之间的算法的异同进行了讲解。最后我们又总结了一下尤雨溪对 “为什么 Vue 不需要时间分片？” 这个问题的解析。</p>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ END ------</div></div><div class="post-copyright copyright"><div class="copyright-author"><span class="copyright-author__name">Author: </span><span class="copyright-author__value"><a href="https://niki571.github.io">WuQianying</a></span></div><div class="copyright-link"><span class="copyright-link__name">Link: </span><span class="copyright-link__value"><a href="https://niki571.github.io/%E4%B8%BA%E4%BB%80%E4%B9%88React%E7%9A%84Diff%E7%AE%97%E6%B3%95%E4%B8%8D%E9%87%87%E7%94%A8Vue%E7%9A%84%E5%8F%8C%E7%AB%AF%E5%AF%B9%E6%AF%94%E7%AE%97%E6%B3%95/">https://niki571.github.io/%E4%B8%BA%E4%BB%80%E4%B9%88React%E7%9A%84Diff%E7%AE%97%E6%B3%95%E4%B8%8D%E9%87%87%E7%94%A8Vue%E7%9A%84%E5%8F%8C%E7%AB%AF%E5%AF%B9%E6%AF%94%E7%AE%97%E6%B3%95/</a></span></div><div class="copyright-notice"><span class="copyright-notice__name">Copyright: </span><span class="copyright-notice__value">All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" rel="external nofollow" target="_blank">BY-NC-SA</a> unless stating additionally</span></div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://niki571.github.io/tags/React/">React</a></span></div><nav class="post-paginator paginator"><div class="paginator-prev"><a class="paginator-prev__link" href="/Flutter%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%EF%BC%88%E4%B8%80%EF%BC%89-Widget/"><span class="paginator-prev__icon"><i class="fas fa-angle-left"></i></span><span class="paginator-prev__text">Flutter 源码解析（一） Widget</span></a></div><div class="paginator-next"><a class="paginator-next__link" href="/React%20hooks%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/"><span class="paginator-prev__text">React hooks 源码解析</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">Catalog</span><span class="sidebar-nav-ov">Overview</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">
+          前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#React-%E5%AE%98%E6%96%B9%E7%9A%84%E8%A7%A3%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">
+          React 官方的解析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Fiber-%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">3.</span> <span class="toc-text">
+          Fiber 的结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Fiber-%E9%93%BE%E8%A1%A8%E7%9A%84%E7%94%9F%E6%88%90"><span class="toc-number">4.</span> <span class="toc-text">
+          Fiber 链表的生成</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#React-%E7%9A%84-Diff-%E7%AE%97%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">
+          React 的 Diff 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E8%BD%AE%EF%BC%8C%E5%B8%B8%E8%A7%81%E6%83%85%E5%86%B5%E7%9A%84%E6%AF%94%E5%AF%B9"><span class="toc-number">5.1.</span> <span class="toc-text">
+          第一轮，常见情况的比对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E8%BD%AE%EF%BC%8C%E4%B8%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E6%83%85%E5%86%B5%E7%9A%84%E6%AF%94%E5%AF%B9"><span class="toc-number">5.2.</span> <span class="toc-text">
+          第二轮，不常见的情况的比对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E7%82%B9%E5%A6%82%E4%BD%95%E5%8D%8F%E8%B0%83%E6%9B%B4%E6%96%B0%E4%BD%8D%E7%BD%AE%E4%BF%A1%E6%81%AF"><span class="toc-number">5.3.</span> <span class="toc-text">
+          重点如何协调更新位置信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">5.4.</span> <span class="toc-text">
+          小结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%BE%E6%96%87%E8%A7%A3%E9%87%8A-React-Diff-%E7%AE%97%E6%B3%95"><span class="toc-number">6.</span> <span class="toc-text">
+          图文解释 React Diff 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84-Diff-%E5%9C%BA%E6%99%AF"><span class="toc-number">6.1.</span> <span class="toc-text">
+          最简单的 Diff 场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E7%9A%84-Diff-%E5%9C%BA%E6%99%AF"><span class="toc-number">6.2.</span> <span class="toc-text">
+          复杂的 Diff 场景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Vue3-%E7%9A%84-Diff-%E7%AE%97%E6%B3%95"><span class="toc-number">7.</span> <span class="toc-text">
+          Vue3 的 Diff 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E8%BD%AE%EF%BC%8C%E5%B8%B8%E8%A7%81%E6%83%85%E5%86%B5%E7%9A%84%E6%AF%94%E5%AF%B9-1"><span class="toc-number">7.1.</span> <span class="toc-text">
+          第一轮，常见情况的比对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E8%BD%AE%EF%BC%8C%E5%A4%8D%E6%9D%82%E6%83%85%E5%86%B5%E7%9A%84%E6%AF%94%E5%AF%B9"><span class="toc-number">7.2.</span> <span class="toc-text">
+          第二轮，复杂情况的比对</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Vue2-%E7%9A%84-Diff-%E7%AE%97%E6%B3%95"><span class="toc-number">8.</span> <span class="toc-text">
+          Vue2 的 Diff 算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E8%BD%AE%EF%BC%8C%E7%AE%80%E5%8D%95%E6%83%85%E5%86%B5%E7%9A%84%E6%AF%94%E5%AF%B9"><span class="toc-number">8.1.</span> <span class="toc-text">
+          第一轮，简单情况的比对</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E8%BD%AE%EF%BC%8C%E4%B8%8D%E5%B8%B8%E8%A7%81%E7%9A%84%E6%83%85%E5%86%B5%E7%9A%84%E6%AF%94%E5%AF%B9-1"><span class="toc-number">8.2.</span> <span class="toc-text">
+          第二轮，不常见的情况的比对</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#React%E3%80%81Vue3%E3%80%81Vue2-%E7%9A%84-Diff-%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94"><span class="toc-number">9.</span> <span class="toc-text">
+          React、Vue3、Vue2 的 Diff 算法对比</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%90%8C%E7%82%B9"><span class="toc-number">9.1.</span> <span class="toc-text">
+          相同点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8D%E5%90%8C%E7%82%B9"><span class="toc-number">9.2.</span> <span class="toc-text">
+          不同点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-Vue-%E4%B8%AD%E4%B8%8D%E9%9C%80%E8%A6%81%E4%BD%BF%E7%94%A8-Fiber"><span class="toc-number">10.</span> <span class="toc-text">
+          为什么 Vue 中不需要使用 Fiber</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">11.</span> <span class="toc-text">
+          总结</span></a></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/stun-logo.svg" alt="avatar"></div><p class="sidebar-ov-author__text">Keep studying, Keep Creating</p></div><div class="sidebar-ov-cc"><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener" data-popover="Creative Commons" data-popover-pos="up"><img src="/images/cc-by-nc-sa.svg"></a></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">You have read </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>Powered by <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a></span><span> v6.3.0</span><span class="footer__devider">|</span><span>Theme - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
