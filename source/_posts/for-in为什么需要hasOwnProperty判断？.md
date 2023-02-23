@@ -90,15 +90,7 @@ for (let key in p) {
 
 延伸问题：
 
-`Object.hasOwnProperty.call(p. key)`
-
-hasOwnProperty 是 Object 上的方法，所有对象默认会继承该方法，为什么不直接
-
-`p.hasOwnProperty(key)`
-
-而使用
-
-`Object.hasOwnProperty.call(object, key)`
+`Object.hasOwnProperty.call(p.key)`hasOwnProperty 是 Object 上的方法，所有对象默认会继承该方法，为什么不直接`p.hasOwnProperty(key)`而使用`Object.hasOwnProperty.call(object, key)`
 
 我们试试：
 
