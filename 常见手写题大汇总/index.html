@@ -1,12 +1,12 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="1.防抖 debounce       防抖的原理：你尽管触发事件，但是我一定在事件触发的 n 秒之后才执行，如果你在触发事件 n 秒内又触发了这个事件，那我就以新的事件的时间为准，n 秒之后在执行。 1234567891011function debounce(func, delay) &amp;#123;  let timer;  return function">
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="1.防抖 debounce       防抖的原理：你尽管触发事件，但是我一定在事件触发的 n 秒之后才执行，如果你在触发事件 n 秒内又触发了这个事件，那我就以新的事件的时间为准，n 秒之后在执行。 1234567891011function debounce(func, delay) &amp;#123;  let timer;  return function (...args">
 <meta property="og:type" content="article">
 <meta property="og:title" content="常见手写题大汇总">
 <meta property="og:url" content="https://niki571.github.io/%E5%B8%B8%E8%A7%81%E6%89%8B%E5%86%99%E9%A2%98%E5%A4%A7%E6%B1%87%E6%80%BB/index.html">
 <meta property="og:site_name" content="吴倩颖的网络日志">
-<meta property="og:description" content="1.防抖 debounce       防抖的原理：你尽管触发事件，但是我一定在事件触发的 n 秒之后才执行，如果你在触发事件 n 秒内又触发了这个事件，那我就以新的事件的时间为准，n 秒之后在执行。 1234567891011function debounce(func, delay) &amp;#123;  let timer;  return function">
+<meta property="og:description" content="1.防抖 debounce       防抖的原理：你尽管触发事件，但是我一定在事件触发的 n 秒之后才执行，如果你在触发事件 n 秒内又触发了这个事件，那我就以新的事件的时间为准，n 秒之后在执行。 1234567891011function debounce(func, delay) &amp;#123;  let timer;  return function (...args">
 <meta property="og:locale">
 <meta property="article:published_time" content="2020-11-03T04:40:40.000Z">
-<meta property="article:modified_time" content="2023-02-23T07:25:02.711Z">
+<meta property="article:modified_time" content="2023-02-23T10:58:23.375Z">
 <meta property="article:author" content="WuQianying">
 <meta property="article:tag" content="javascript">
 <meta property="article:tag" content="面试">
@@ -39,6 +39,8 @@ window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></he
           <a href="#1-防抖-debounce" class="heading-link"><i class="fas fa-link"></i></a><a href="#1-防抖-debounce" class="headerlink" title="1.防抖 debounce"></a>1.防抖 debounce</h1>
       <p>防抖的原理：你尽管触发事件，但是我一定在事件触发的 n 秒之后才执行，如果你在触发事件 n 秒内又触发了这个事件，那我就以新的事件的时间为准，n 秒之后在执行。</p>
 <figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">debounce</span>(<span class="params">func, delay</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> timer;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> (<span class="params">...args</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (timer) <span class="built_in">clearTimeout</span>(timer);</span><br><span class="line"></span><br><span class="line">    timer = <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      func.<span class="title function_">apply</span>(<span class="variable language_">this</span>, args);</span><br><span class="line">      timer = <span class="literal">null</span>;</span><br><span class="line">    &#125;, delay);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<span id="more"></span>
 
 
         <h1 id="2-节流-throttle"   >
