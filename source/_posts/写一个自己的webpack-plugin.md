@@ -253,135 +253,196 @@ chunkGroup 有一个 integrateChunks 的 api，把后面的 chunk 合并到前�
 
 合并完之后记得 return false，因为外面是一个 while 循环，不 return false，就一直死循环。
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/041e0dfa32b649d09227f31e3890dec0_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 先试一下现在的效果：
+
 不引入插件的时候是这样的：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/9ada46f3928542759836248ac161aeee_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 3 个入口 chunk，3 组入口 chunk 的异步引入的模块。所以产生了 6 个文件。
+
 入口 chunk 对应的文件里引入异步模块的方法变成了 webpack runtime 的 \_webpack_require.e
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/ab3f1e4ed00141f189d7defab9093a01_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
 
 而它引入的异步 chunk 里就如前面分析的，包含了这个模块的所有异步依赖：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/21cd6aaf4f29490ca5acb9d9159f83f0_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/21cd6aaf4f29490ca5acb9d9159f83f0_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/1ddfb5bc17454510acc4f665ab21231b_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 分别是 a + common，b + common，a + b，也就是每个入口模块依赖的所有异步模块。
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/d24f06a5529141b291728e39650069e8_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/328a4751ba06450d85f162bc04dfb200_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/6f7070fc4a0f4991916d6ab93f18c1ba_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
 
 那优化之后呢？
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/41265d4cf9c24153bc305f1ce982be06_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 都放到一个 chunk 里了：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/4a883077c36e44d3ac0fd6a19f43bfb4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 这倒是符合我们写的逻辑，因为两两合并，最后剩下的肯定只有一个。
+
 但这样显然不大好，因为每个页面是独立的，应该分开，但是异步的 chunk 倒是可以合并。
+
 所以我们优化一下：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/988934861746430b8351d3cd5cca9cf4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 调用 chunk 的 isInitial 方法就可以判断是否是入口的 chunk，是的话就跳过。
+
 这样就只合并了异步 chunk。
+
 效果是这样的：
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/e914f1668cd043058f5320072a2443c4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
 
 3 个入口 chunk 的依赖也变成这个 chunk 了：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/bf0c3297c5c24996b2756f78664fdaf1_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 那如果我要根据 chunk 大小来优化呢？
+
 那就可以判断下 a、b 的 chunk 的大小和合并之后的 chunk 大小，如果合并之后比合并前小很多，就合并。
+
 当然，不同的 chunk 合并效果是不一样的，我们要把所有的合并效果下来：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/3b47d20186bd45bb8e35ea74c72fe585_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 通过 chunkGraph.getChunkSize 的 api 拿到 chunk 大小，通过 chunkGroup.getIntegratedChunkSize 的 api 拿到合并后的 chunk 大小。
+
 记录下合并的两个 chunk 合并的收益。
+
 做个排序，把合并收益最大的两个 chunk 合并。
+
 返回 true 来继续循环进行合并，直到收益小于 1.5，那就 return false 停止合并。
+
 当然，这个 1.5 也可以通过 options 传进来。
+
 效果是这样的：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/1a3dcfb02340400580fe0f11a732c424_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 两个异步 chunk 分别为：
+
 a + b + common：
+
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/203925c262ca420dbb66507f8b0a32b5_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
 
 a + b：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/398838d882264afda087bc94f3aa8231_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 也就是说只把之前的 a + common 和 b + common 合并了，因为 common 模块比较大，所以合并之后的收益是挺大的。
+
 这样就完成了 chunk 拆分的优化。
+
 有的同学说，我平时也不用自己写插件来拆分 chunk 呀，webpack 不是提供了 SplitChunksPlugin 的插件么，还变成内置的了，配置下 optimization.splitChunks 就行。
+
 没错，webpack 默认提供了拆分 chunk 的插件。
+
 那这个插件是怎么实现的呢？
+
 没错，SplitChunkPlugin 的实现原理就是我们刚才说的这些，注册了 optimizeChunks 的 hook，在里面做了 chunk 拆分：
 
+![](https://raw.githubusercontent.com/niki571/MyImageHost/main/3e1509975afb4169bb2331c7d7c84f7f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp)
+
 它可以根据配置来拆分 chunk，但是终究是有局限性的。
+
 如果某种 chunk 拆分方式它不支持呢？
+
 我们就可以写插件自己拆分了，会自己拆分 chunk 之后，还不是想怎么分就怎么分么！
+
 我们写的这个 webpack 插件的全部代码如下：
+
+```javascript
 class ChunkTestPlugin {
-constructor(options) {
-this.options = options || {};
-}
+  constructor(options) {
+    this.options = options || {};
+  }
 
-    apply(compiler) {
-    	const options = this.options;
-    	const minSizeReduce = options.minSizeReduce || 1.5;
+  apply(compiler) {
+    const options = this.options;
+    const minSizeReduce = options.minSizeReduce || 1.5;
 
-    	compiler.hooks.compilation.tap("ChunkTestPlugin", compilation => {
-    		compilation.hooks.optimizeChunks.tap("ChunkTestPlugin", chunks => {
-    			const chunkGraph = compilation.chunkGraph;
+    compiler.hooks.compilation.tap("ChunkTestPlugin", (compilation) => {
+      compilation.hooks.optimizeChunks.tap("ChunkTestPlugin", (chunks) => {
+        const chunkGraph = compilation.chunkGraph;
 
-    			let combinations = [];
-    			for (const a of chunks) {
-    				if (a.canBeInitial()) continue;
-    				for (const b of chunks) {
-    					if (b.canBeInitial()) continue;
-    					if (b === a) break;
+        let combinations = [];
+        for (const a of chunks) {
+          if (a.canBeInitial()) continue;
+          for (const b of chunks) {
+            if (b.canBeInitial()) continue;
+            if (b === a) break;
 
-    					const aSize = chunkGraph.getChunkSize(b, {
-    						chunkOverhead: 0
-    					});
-    					const bSize = chunkGraph.getChunkSize(a, {
-    						chunkOverhead: 0
-    					});
-    					const abSize = chunkGraph.getIntegratedChunksSize(b, a, {
-    						chunkOverhead: 0
-    					});
-    					const improvement = (aSize + bSize) / abSize;
+            const aSize = chunkGraph.getChunkSize(b, {
+              chunkOverhead: 0,
+            });
+            const bSize = chunkGraph.getChunkSize(a, {
+              chunkOverhead: 0,
+            });
+            const abSize = chunkGraph.getIntegratedChunksSize(b, a, {
+              chunkOverhead: 0,
+            });
+            const improvement = (aSize + bSize) / abSize;
 
-    					combinations.push({
-    						a,
-    						b,
-    						improvement
-    					});
-    				}
-    			}
+            combinations.push({
+              a,
+              b,
+              improvement,
+            });
+          }
+        }
 
-    			combinations.sort((a, b) => {
-    				return b.improvement - a.improvement;
-    			});
+        combinations.sort((a, b) => {
+          return b.improvement - a.improvement;
+        });
 
-    			const pair = combinations[0];
+        const pair = combinations[0];
 
-    			if (!pair) return;
-    			if (pair.improvement < minSizeReduce) return;
+        if (!pair) return;
+        if (pair.improvement < minSizeReduce) return;
 
-    			chunkGraph.integrateChunks(pair.b, pair.a);
-    			compilation.chunks.delete(pair.a);
-    			return true;
-    		});
-    	});
-    }
-
+        chunkGraph.integrateChunks(pair.b, pair.a);
+        compilation.chunks.delete(pair.a);
+        return true;
+      });
+    });
+  }
 }
 
 module.exports = ChunkTestPlugin;
-复制代码
-总结
+```
+
+# 总结
+
 webpack 的处理单位是模块，它的编译流程分为 make、seal、emit：
 
-make：对入口模块分析依赖，构建 ModuleGraph，对每个模块调用 loader 处理。
-seal：合并 Module 为 Chunk，合并之后 ModuleGraph 会变为 ChunkGraph。
-emit：对每个 Chunk 通过模版打印成代码后输出
+- make：对入口模块分析依赖，构建 ModuleGraph，对每个模块调用 loader 处理。
+- seal：合并 Module 为 Chunk，合并之后 ModuleGraph 会变为 ChunkGraph。
+- emit：对每个 Chunk 通过模版打印成代码后输出
 
 这个编译流程中有很多 hook，通过 tappable 的 api 组织，可以控制回调的同步、异步、串行、并行执行。
+
 我们今天写的 Chunk 拆分插件，就是一个 SyncBailHook，同步熔断的串行 hook 类型，也就是前面回调返回 false 会终止后面的回调执行。
+
 首先在 compiler 的 thisCompilation 的 hook 里来注册 compilation 的 optimizeChunks 的 hook。
+
 在 optimizeChunks 的 hook 里可以拿到所有的 chunk，调用 chunkGraph 的 api 可以进行合并。
+
 我们排除掉了入口 chunk，然后把剩下的 chunk 根据大小进行合并，达到了优化 chunk 的目的。
+
 webpack 内置了 SplitChunksPlugin，但是毕竟有局限性，当不满足需求的时候就可以自己写插件来划分 chunk 了。
+
 自己来控制 Chunk 划分，想怎么分就怎么分！
-
-```
-
-```
-
-```
-
-```
