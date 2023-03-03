@@ -177,78 +177,80 @@ window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></he
 <p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/aee11acc2daa43b2a9e641abce7e263f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>我们只取第一组 chunk 进行合并，合并完如果还有就返回 true，继续进行下次合并。</p>
 <p>合并完之后记得 return false，因为外面是一个 while 循环，不 return false，就一直死循环。</p>
-<p>先试一下现在的效果：<br>不引入插件的时候是这样的：</p>
-<p>3 个入口 chunk，3 组入口 chunk 的异步引入的模块。所以产生了 6 个文件。<br>入口 chunk 对应的文件里引入异步模块的方法变成了 webpack runtime 的 _webpack_require.e</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/041e0dfa32b649d09227f31e3890dec0_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>先试一下现在的效果：</p>
+<p>不引入插件的时候是这样的：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/9ada46f3928542759836248ac161aeee_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>3 个入口 chunk，3 组入口 chunk 的异步引入的模块。所以产生了 6 个文件。</p>
+<p>入口 chunk 对应的文件里引入异步模块的方法变成了 webpack runtime 的 _webpack_require.e</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/ab3f1e4ed00141f189d7defab9093a01_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>而它引入的异步 chunk 里就如前面分析的，包含了这个模块的所有异步依赖：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/21cd6aaf4f29490ca5acb9d9159f83f0_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/21cd6aaf4f29490ca5acb9d9159f83f0_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/1ddfb5bc17454510acc4f665ab21231b_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>分别是 a + common，b + common，a + b，也就是每个入口模块依赖的所有异步模块。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/d24f06a5529141b291728e39650069e8_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/328a4751ba06450d85f162bc04dfb200_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/6f7070fc4a0f4991916d6ab93f18c1ba_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>那优化之后呢？</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/41265d4cf9c24153bc305f1ce982be06_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>都放到一个 chunk 里了：</p>
-<p>这倒是符合我们写的逻辑，因为两两合并，最后剩下的肯定只有一个。<br>但这样显然不大好，因为每个页面是独立的，应该分开，但是异步的 chunk 倒是可以合并。<br>所以我们优化一下：</p>
-<p>调用 chunk 的 isInitial 方法就可以判断是否是入口的 chunk，是的话就跳过。<br>这样就只合并了异步 chunk。<br>效果是这样的：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/4a883077c36e44d3ac0fd6a19f43bfb4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>这倒是符合我们写的逻辑，因为两两合并，最后剩下的肯定只有一个。</p>
+<p>但这样显然不大好，因为每个页面是独立的，应该分开，但是异步的 chunk 倒是可以合并。</p>
+<p>所以我们优化一下：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/988934861746430b8351d3cd5cca9cf4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>调用 chunk 的 isInitial 方法就可以判断是否是入口的 chunk，是的话就跳过。</p>
+<p>这样就只合并了异步 chunk。</p>
+<p>效果是这样的：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/e914f1668cd043058f5320072a2443c4_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>3 个入口 chunk 的依赖也变成这个 chunk 了：</p>
-<p>那如果我要根据 chunk 大小来优化呢？<br>那就可以判断下 a、b 的 chunk 的大小和合并之后的 chunk 大小，如果合并之后比合并前小很多，就合并。<br>当然，不同的 chunk 合并效果是不一样的，我们要把所有的合并效果下来：</p>
-<p>通过 chunkGraph.getChunkSize 的 api 拿到 chunk 大小，通过 chunkGroup.getIntegratedChunkSize 的 api 拿到合并后的 chunk 大小。<br>记录下合并的两个 chunk 合并的收益。<br>做个排序，把合并收益最大的两个 chunk 合并。<br>返回 true 来继续循环进行合并，直到收益小于 1.5，那就 return false 停止合并。<br>当然，这个 1.5 也可以通过 options 传进来。<br>效果是这样的：</p>
-<p>两个异步 chunk 分别为：<br>a + b + common：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/bf0c3297c5c24996b2756f78664fdaf1_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>那如果我要根据 chunk 大小来优化呢？</p>
+<p>那就可以判断下 a、b 的 chunk 的大小和合并之后的 chunk 大小，如果合并之后比合并前小很多，就合并。</p>
+<p>当然，不同的 chunk 合并效果是不一样的，我们要把所有的合并效果下来：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/3b47d20186bd45bb8e35ea74c72fe585_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>通过 chunkGraph.getChunkSize 的 api 拿到 chunk 大小，通过 chunkGroup.getIntegratedChunkSize 的 api 拿到合并后的 chunk 大小。</p>
+<p>记录下合并的两个 chunk 合并的收益。</p>
+<p>做个排序，把合并收益最大的两个 chunk 合并。</p>
+<p>返回 true 来继续循环进行合并，直到收益小于 1.5，那就 return false 停止合并。</p>
+<p>当然，这个 1.5 也可以通过 options 传进来。</p>
+<p>效果是这样的：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/1a3dcfb02340400580fe0f11a732c424_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>两个异步 chunk 分别为：</p>
+<p>a + b + common：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/203925c262ca420dbb66507f8b0a32b5_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
 <p>a + b：</p>
-<p>也就是说只把之前的 a + common 和 b + common 合并了，因为 common 模块比较大，所以合并之后的收益是挺大的。<br>这样就完成了 chunk 拆分的优化。<br>有的同学说，我平时也不用自己写插件来拆分 chunk 呀，webpack 不是提供了 SplitChunksPlugin 的插件么，还变成内置的了，配置下 optimization.splitChunks 就行。<br>没错，webpack 默认提供了拆分 chunk 的插件。<br>那这个插件是怎么实现的呢？<br>没错，SplitChunkPlugin 的实现原理就是我们刚才说的这些，注册了 optimizeChunks 的 hook，在里面做了 chunk 拆分：</p>
-<p>它可以根据配置来拆分 chunk，但是终究是有局限性的。<br>如果某种 chunk 拆分方式它不支持呢？<br>我们就可以写插件自己拆分了，会自己拆分 chunk 之后，还不是想怎么分就怎么分么！<br>我们写的这个 webpack 插件的全部代码如下：<br>class ChunkTestPlugin {<br>constructor(options) {<br>this.options &#x3D; options || {};<br>}</p>
-<pre><code>apply(compiler) &#123;
-    const options = this.options;
-    const minSizeReduce = options.minSizeReduce || 1.5;
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/398838d882264afda087bc94f3aa8231_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>也就是说只把之前的 a + common 和 b + common 合并了，因为 common 模块比较大，所以合并之后的收益是挺大的。</p>
+<p>这样就完成了 chunk 拆分的优化。</p>
+<p>有的同学说，我平时也不用自己写插件来拆分 chunk 呀，webpack 不是提供了 SplitChunksPlugin 的插件么，还变成内置的了，配置下 optimization.splitChunks 就行。</p>
+<p>没错，webpack 默认提供了拆分 chunk 的插件。</p>
+<p>那这个插件是怎么实现的呢？</p>
+<p>没错，SplitChunkPlugin 的实现原理就是我们刚才说的这些，注册了 optimizeChunks 的 hook，在里面做了 chunk 拆分：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/3e1509975afb4169bb2331c7d7c84f7f_tplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.webp"></p>
+<p>它可以根据配置来拆分 chunk，但是终究是有局限性的。</p>
+<p>如果某种 chunk 拆分方式它不支持呢？</p>
+<p>我们就可以写插件自己拆分了，会自己拆分 chunk 之后，还不是想怎么分就怎么分么！</p>
+<p>我们写的这个 webpack 插件的全部代码如下：</p>
+<figure class="highlight javascript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ChunkTestPlugin</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">options</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">options</span> = options || &#123;&#125;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">apply</span>(<span class="params">compiler</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> options = <span class="variable language_">this</span>.<span class="property">options</span>;</span><br><span class="line">    <span class="keyword">const</span> minSizeReduce = options.<span class="property">minSizeReduce</span> || <span class="number">1.5</span>;</span><br><span class="line"></span><br><span class="line">    compiler.<span class="property">hooks</span>.<span class="property">compilation</span>.<span class="title function_">tap</span>(<span class="string">&quot;ChunkTestPlugin&quot;</span>, <span class="function">(<span class="params">compilation</span>) =&gt;</span> &#123;</span><br><span class="line">      compilation.<span class="property">hooks</span>.<span class="property">optimizeChunks</span>.<span class="title function_">tap</span>(<span class="string">&quot;ChunkTestPlugin&quot;</span>, <span class="function">(<span class="params">chunks</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> chunkGraph = compilation.<span class="property">chunkGraph</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> combinations = [];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> a <span class="keyword">of</span> chunks) &#123;</span><br><span class="line">          <span class="keyword">if</span> (a.<span class="title function_">canBeInitial</span>()) <span class="keyword">continue</span>;</span><br><span class="line">          <span class="keyword">for</span> (<span class="keyword">const</span> b <span class="keyword">of</span> chunks) &#123;</span><br><span class="line">            <span class="keyword">if</span> (b.<span class="title function_">canBeInitial</span>()) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (b === a) <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">const</span> aSize = chunkGraph.<span class="title function_">getChunkSize</span>(b, &#123;</span><br><span class="line">              <span class="attr">chunkOverhead</span>: <span class="number">0</span>,</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="keyword">const</span> bSize = chunkGraph.<span class="title function_">getChunkSize</span>(a, &#123;</span><br><span class="line">              <span class="attr">chunkOverhead</span>: <span class="number">0</span>,</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="keyword">const</span> abSize = chunkGraph.<span class="title function_">getIntegratedChunksSize</span>(b, a, &#123;</span><br><span class="line">              <span class="attr">chunkOverhead</span>: <span class="number">0</span>,</span><br><span class="line">            &#125;);</span><br><span class="line">            <span class="keyword">const</span> improvement = (aSize + bSize) / abSize;</span><br><span class="line"></span><br><span class="line">            combinations.<span class="title function_">push</span>(&#123;</span><br><span class="line">              a,</span><br><span class="line">              b,</span><br><span class="line">              improvement,</span><br><span class="line">            &#125;);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        combinations.<span class="title function_">sort</span>(<span class="function">(<span class="params">a, b</span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> b.<span class="property">improvement</span> - a.<span class="property">improvement</span>;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> pair = combinations[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!pair) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (pair.<span class="property">improvement</span> &lt; minSizeReduce) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">        chunkGraph.<span class="title function_">integrateChunks</span>(pair.<span class="property">b</span>, pair.<span class="property">a</span>);</span><br><span class="line">        compilation.<span class="property">chunks</span>.<span class="title function_">delete</span>(pair.<span class="property">a</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = <span class="title class_">ChunkTestPlugin</span>;</span><br></pre></td></tr></table></div></figure>
 
-    compiler.hooks.compilation.tap(&quot;ChunkTestPlugin&quot;, compilation =&gt; &#123;
-        compilation.hooks.optimizeChunks.tap(&quot;ChunkTestPlugin&quot;, chunks =&gt; &#123;
-            const chunkGraph = compilation.chunkGraph;
 
-            let combinations = [];
-            for (const a of chunks) &#123;
-                if (a.canBeInitial()) continue;
-                for (const b of chunks) &#123;
-                    if (b.canBeInitial()) continue;
-                    if (b === a) break;
-
-                    const aSize = chunkGraph.getChunkSize(b, &#123;
-                        chunkOverhead: 0
-                    &#125;);
-                    const bSize = chunkGraph.getChunkSize(a, &#123;
-                        chunkOverhead: 0
-                    &#125;);
-                    const abSize = chunkGraph.getIntegratedChunksSize(b, a, &#123;
-                        chunkOverhead: 0
-                    &#125;);
-                    const improvement = (aSize + bSize) / abSize;
-
-                    combinations.push(&#123;
-                        a,
-                        b,
-                        improvement
-                    &#125;);
-                &#125;
-            &#125;
-
-            combinations.sort((a, b) =&gt; &#123;
-                return b.improvement - a.improvement;
-            &#125;);
-
-            const pair = combinations[0];
-
-            if (!pair) return;
-            if (pair.improvement &lt; minSizeReduce) return;
-
-            chunkGraph.integrateChunks(pair.b, pair.a);
-            compilation.chunks.delete(pair.a);
-            return true;
-        &#125;);
-    &#125;);
-&#125;
-</code></pre>
-<p>}</p>
-<p>module.exports &#x3D; ChunkTestPlugin;<br>复制代码<br>总结<br>webpack 的处理单位是模块，它的编译流程分为 make、seal、emit：</p>
-<p>make：对入口模块分析依赖，构建 ModuleGraph，对每个模块调用 loader 处理。<br>seal：合并 Module 为 Chunk，合并之后 ModuleGraph 会变为 ChunkGraph。<br>emit：对每个 Chunk 通过模版打印成代码后输出</p>
-<p>这个编译流程中有很多 hook，通过 tappable 的 api 组织，可以控制回调的同步、异步、串行、并行执行。<br>我们今天写的 Chunk 拆分插件，就是一个 SyncBailHook，同步熔断的串行 hook 类型，也就是前面回调返回 false 会终止后面的回调执行。<br>首先在 compiler 的 thisCompilation 的 hook 里来注册 compilation 的 optimizeChunks 的 hook。<br>在 optimizeChunks 的 hook 里可以拿到所有的 chunk，调用 chunkGraph 的 api 可以进行合并。<br>我们排除掉了入口 chunk，然后把剩下的 chunk 根据大小进行合并，达到了优化 chunk 的目的。<br>webpack 内置了 SplitChunksPlugin，但是毕竟有局限性，当不满足需求的时候就可以自己写插件来划分 chunk 了。<br>自己来控制 Chunk 划分，想怎么分就怎么分！</p>
-<figure class="highlight plaintext"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></div></figure>
-
-<figure class="highlight plaintext"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></div></figure>
+        <h1 id="总结"   >
+          <a href="#总结" class="heading-link"><i class="fas fa-link"></i></a><a href="#总结" class="headerlink" title="总结"></a>总结</h1>
+      <p>webpack 的处理单位是模块，它的编译流程分为 make、seal、emit：</p>
+<ul>
+<li>make：对入口模块分析依赖，构建 ModuleGraph，对每个模块调用 loader 处理。</li>
+<li>seal：合并 Module 为 Chunk，合并之后 ModuleGraph 会变为 ChunkGraph。</li>
+<li>emit：对每个 Chunk 通过模版打印成代码后输出</li>
+</ul>
+<p>这个编译流程中有很多 hook，通过 tappable 的 api 组织，可以控制回调的同步、异步、串行、并行执行。</p>
+<p>我们今天写的 Chunk 拆分插件，就是一个 SyncBailHook，同步熔断的串行 hook 类型，也就是前面回调返回 false 会终止后面的回调执行。</p>
+<p>首先在 compiler 的 thisCompilation 的 hook 里来注册 compilation 的 optimizeChunks 的 hook。</p>
+<p>在 optimizeChunks 的 hook 里可以拿到所有的 chunk，调用 chunkGraph 的 api 可以进行合并。</p>
+<p>我们排除掉了入口 chunk，然后把剩下的 chunk 根据大小进行合并，达到了优化 chunk 的目的。</p>
+<p>webpack 内置了 SplitChunksPlugin，但是毕竟有局限性，当不满足需求的时候就可以自己写插件来划分 chunk 了。</p>
+<p>自己来控制 Chunk 划分，想怎么分就怎么分！</p>
 </div></div></article><article class="postlist-item post"><header class="post-header"><h1 class="post-title"><a class="post-title__link" href="/React%20hooks%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/">React hooks 源码解析</a></h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">Created</span><span class="post-meta-item__value">2021-06-15</span></span></div></header><div class="post-body"><div class="post-excerpt"><p>本文将讲解 hooks 的执行过程以及常用的 hooks 的源码。</p>
 
         <h1 id="hooks-相关数据结构"   >
