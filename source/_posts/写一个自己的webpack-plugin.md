@@ -11,6 +11,8 @@ categories: 前端
 
 首先我们简单了解下 webpack 的原理：
 
+<!-- more -->
+
 # webpack 的原理
 
 webpack 是一个打包工具（bundler），它打包的是什么呢？
