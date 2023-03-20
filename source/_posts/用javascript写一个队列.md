@@ -1,10 +1,11 @@
 ---
 title: 用 javascript 写一个队列
 date: 2023-03-20 14:44:29
-tags:
+tags: [源码分析, javascript]
+categories: 前端
 ---
 
-之前我们介绍过 python 的 Queue 队列，队列可以解决并发过程中生产和消费不同步的问题。具体可以翻看[前文](https://markdown.com.cn)。
+之前我们介绍过 python 的 Queue 队列，队列可以解决并发过程中生产和消费不同步的问题。具体可以翻看[前文](https://niki571.github.io/python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%BA%8C%EF%BC%89queue/)。
 
 今天我们会以 Yocto-queue 源码为例，看一下 javascript 如何写一个队列。
 
@@ -12,6 +13,8 @@ tags:
 
 Yocto-queue 是一种允许高效存储和检索数据的数据结构。它是一种队列类型，是一个元素集合，其中的项被添加到一端并从另一端移除。
 它被设计用来操作数据量很大的数组，在你需要使用大量的 Array.push、Array.shift 操作时，Yocto-queue 有更好的性能表现。
+
+<!-- more -->
 
 # 源码分析
 
