@@ -9,6 +9,8 @@ categories: Node
 
 我最近在写 node 项目，整个项目是用 @nest/cli 起的，文件模块默认用的是 ESM。为了快捷验证我的爬虫，想直接在 node REPL 环境中单独运行，但总是报错。
 
+<!-- more -->
+
 ![](https://raw.githubusercontent.com/niki571/MyImageHost/main/%E6%88%AA%E5%B1%8F2023-03-22%20%E4%B8%8B%E5%8D%885.36.13.png)
 
 研究了下，有 2 种方便快捷的方法可以在 node REPL 中跑 ESM。
