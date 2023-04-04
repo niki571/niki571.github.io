@@ -1,0 +1,218 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="微信应用的一个很大的优势就在于使用过程中是不需要进行注册和显式登录的，大部分问题基本上可以一键解决。但是在授权、登录和获取用户信息的过程中都发生了哪些事情，今天我们就来讨论一下。这篇文章主要分析以下几个问题：  授权和登录的意义 session_key 的作用 unionId 的作用，有哪些获取途径 在应用中如何保存用户登录态">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一文详解小程序授权、登录、session_key 和 unionId">
+<meta property="og:url" content="https://niki571.github.io/%E4%B8%80%E6%96%87%E8%AF%A6%E8%A7%A3%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%8E%88%E6%9D%83%E3%80%81%E7%99%BB%E5%BD%95%E3%80%81session-key%E5%92%8CunionId/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="微信应用的一个很大的优势就在于使用过程中是不需要进行注册和显式登录的，大部分问题基本上可以一键解决。但是在授权、登录和获取用户信息的过程中都发生了哪些事情，今天我们就来讨论一下。这篇文章主要分析以下几个问题：  授权和登录的意义 session_key 的作用 unionId 的作用，有哪些获取途径 在应用中如何保存用户登录态">
+<meta property="og:locale">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/snq7zpqzno.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/nvm3jqw0x9.jpeg">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/t1fntajss4.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/q4k5rnou5v.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/k5hc5pefxl.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/0xxx3wwfci.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/q4i5au2srx.png">
+<meta property="article:published_time" content="2021-09-15T03:01:37.000Z">
+<meta property="article:modified_time" content="2023-04-04T06:01:45.089Z">
+<meta property="article:author" content="WuQianying">
+<meta property="article:tag" content="小程序">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/snq7zpqzno.png"><title>一文详解小程序授权、登录、session_key 和 unionId | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/%E4%B8%80%E6%96%87%E8%AF%A6%E8%A7%A3%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%8E%88%E6%9D%83%E3%80%81%E7%99%BB%E5%BD%95%E3%80%81session-key%E5%92%8CunionId/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":false},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"复制","copySuccess":"复制成功","copyError":"复制失败"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">一文详解小程序授权、登录、session_key 和 unionId</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">发表于</span><span class="post-meta-item__value">2021-09-15</span></span></div></header><div class="post-body"><p>微信应用的一个很大的优势就在于使用过程中是不需要进行注册和显式登录的，大部分问题基本上可以一键解决。但是在授权、登录和获取用户信息的过程中都发生了哪些事情，今天我们就来讨论一下。这篇文章主要分析以下几个问题：</p>
+<ol>
+<li>授权和登录的意义</li>
+<li>session_key 的作用</li>
+<li>unionId 的作用，有哪些获取途径</li>
+<li>在应用中如何保存用户登录态</li>
+</ol>
+<span id="more"></span>
+
+
+        <h1 id="授权和登录的意义"   >
+          <a href="#授权和登录的意义" class="heading-link"><i class="fas fa-link"></i></a><a href="#授权和登录的意义" class="headerlink" title="授权和登录的意义"></a>授权和登录的意义</h1>
+      <p>首先必须要明白，授权和登录实际上是两个操作。</p>
+
+        <h2 id="授权"   >
+          <a href="#授权" class="heading-link"><i class="fas fa-link"></i></a><a href="#授权" class="headerlink" title="授权"></a>授权</h2>
+      <p>那授权的作用是啥呢？从小程序官方文档中我们可以看到授权操作只需通过<code>wx.authorize()</code> 接口便可以完成，以下是文档中对授权操作的描述：</p>
+<p>提前向用户发起授权请求。调用后会立刻弹窗询问用户是否同意授权小程序使用某项功能或获取用户的某些数据，但不会实际调用对应接口。如果用户之前已经同意授权，则不会出现弹窗，直接返回成功。</p>
+<p>也就是说，授权过程实际上只是在小程序前端获得了操作部分 wx 接口的访问许可，<strong>这个过程实际上是不会与开发者服务器发生任何关系的</strong>。那这些访问许可包含哪些内容呢？再来看微信官方提供的 scope 列表：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/snq7zpqzno.png"></p>
+<blockquote>
+<p>注：新版 api 已废弃 wx.authorize()</p>
+</blockquote>
+
+        <h2 id="登录"   >
+          <a href="#登录" class="heading-link"><i class="fas fa-link"></i></a><a href="#登录" class="headerlink" title="登录"></a>登录</h2>
+      <p>所谓的登录就是要让开发者服务器知道当前的用户是谁？在传统的 web 应用中，我们必须要让用户输入账号和密码才能实现登录操作。但是在微信应用中，我们可以通过微信服务器来完成这个操作，获取到与当前用户对应的唯一标志<code>openId</code>，具体操作实现流程如下：</p>
+<p><code>wx.login()</code>用来做登录的方法，调用接口获取登录凭证，<code>code</code> 发送给后端用于置换 <code>session_key</code> 和 <code>openid</code> 等数据。每个用户相对于每个微信应用（公众号或者小程序）的 <code>openId</code> 是唯一的，也就是说一个用户相对于不同的微信应用会存在不同的 <code>openId</code>。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/nvm3jqw0x9.jpeg"></p>
+<p><strong>这是小程序官方的一张登录流程图，现在就来解读一下这个流程</strong></p>
+<ul>
+<li>前端 <code>wx.login()</code>获取 <code>code</code>，调用后端接口，将得到的 <code>code</code> 发送到后端</li>
+<li>后端调用微信接口，用 <code>appid</code>+<code>appsecret</code>+<code>code</code> 发送过去，置换到 <code>session_key</code>+<code>openid</code>，以前是不能置换 <code>unionid</code> 的，但是现在在满足以下条件可以置换到 <code>unionid</code><ol>
+<li>微信开放平台下存在同主体的 App、公众号、小程序</li>
+<li>用户关注了某个相同主体公众号，或曾经在某个相同主体 App、公众号上进行过微信登录授权 同时满足以上两个条件就能拿到用户 <code>unionid</code>，这样一来，就能在 <code>wx.login()</code>准确识别出用户是谁</li>
+</ol>
+</li>
+<li>自定登录态与 <code>openid</code> 和 <code>session_key</code> 关联，实际就是生成一个与 <code>openid</code>，<code>session_key</code> 关联的 <code>token</code>，下发给前端</li>
+<li>前端将后端下发的 <code>token</code> 存入缓存，在后面的接口请求中带上自定登录态</li>
+</ul>
+<p>以上就是小程序的整个登录流程，可以看到其实并不是一定要 <code>wx.getUserInfo()</code>才能拿到用户的信息，在特定的条件下，通过 <code>wx.login()</code>的调用拿到 <code>unionId</code> 也能后端数据库里拿到用户信息。登录过程中涉及 <code>session_key</code> 和 <code>unionId</code>，于是又引出了下面的问题。</p>
+
+        <h1 id="session-key-的作用"   >
+          <a href="#session-key-的作用" class="heading-link"><i class="fas fa-link"></i></a><a href="#session-key-的作用" class="headerlink" title="session_key 的作用"></a>session_key 的作用</h1>
+      <p>那么，<code>session_key</code> 在登录的过程中或者登录完成后起什么作用呢？一起来看一下。</p>
+
+        <h2 id="wx-getUserInfo"   >
+          <a href="#wx-getUserInfo" class="heading-link"><i class="fas fa-link"></i></a><a href="#wx-getUserInfo" class="headerlink" title="wx.getUserInfo"></a>wx.getUserInfo</h2>
+      <p>首先来看一下 <code>wx.getUserInfo</code> 这个 api：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/t1fntajss4.png"></p>
+<p>在设置 <code>withCredentials</code> 属性为 <code>true</code> 的情况下，这个 api 可以拿到 <code>encryptedData</code>，<code>iv</code> 等敏感信息，<code>encryptedData</code> 需要使用 <code>session_key</code> 进行解密，解密后可以拿到的数据如下：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/q4k5rnou5v.png"></p>
+<p>也就是说，<code>session_key</code> 的作用之一是将小程序前端从微信服务器获取到的 <code>encryptedData</code> 解密出来，获取到 <code>openId</code> 和 <code>unionId</code> 等信息。</p>
+<p>但是在 1.2 登录过程中可以看到开发者服务器是能够直接拿到用户的 openId 信息，而且 unionId 也是有其他获取途径，所以 session_key 在这里的作用看起来有点鸡肋。</p>
+
+        <h2 id="getPhoneNumber"   >
+          <a href="#getPhoneNumber" class="heading-link"><i class="fas fa-link"></i></a><a href="#getPhoneNumber" class="headerlink" title="getPhoneNumber"></a>getPhoneNumber</h2>
+      <p><code>session_key</code> 更重要的作用大概体现在获取用户手机方面（可能还包含其他敏感信息获取 api）。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/k5hc5pefxl.png"></p>
+<p>从文档中可以看到 <code>getPhoneNumber</code> 返回的用户数据是加密过的，只有使用 <code>session_key</code> 才能解密，而小程序前端没有 <code>session_key</code>，所以无法获取到用户的手机，只能传到开发者服务器进行处理。</p>
+
+        <h1 id="unionId-的作用，有哪些获取途径？"   >
+          <a href="#unionId-的作用，有哪些获取途径？" class="heading-link"><i class="fas fa-link"></i></a><a href="#unionId-的作用，有哪些获取途径？" class="headerlink" title="unionId 的作用，有哪些获取途径？"></a>unionId 的作用，有哪些获取途径？</h1>
+      
+        <h2 id="UnionID-机制说明"   >
+          <a href="#UnionID-机制说明" class="heading-link"><i class="fas fa-link"></i></a><a href="#UnionID-机制说明" class="headerlink" title="UnionID 机制说明"></a>UnionID 机制说明</h2>
+      <p>如果公司拥有多个移动应用、网站应用、和公众帐号（包括小程序），可通过 unionid 来区分用户的唯一性，因为只要是同一个微信开放平台帐号下的移动应用、网站应用和公众帐号（包括小程序），用户的 <code>unionid</code> 是唯一的。换句话说，同一用户，对同一个微信开放平台下的不同应用，<code>unionid</code> 是相同的。</p>
+<blockquote>
+<p>Tip：<code>unionid</code> 用于识别同一主体下不同账号之间的用户。举例说明：就是公司有 A 订阅号，B 服务号，同一个人关注 A 和 B，会得到不同的 <code>OPENID</code>，但是会得到相同的 <code>unionid</code>。这样就可以识别到相同的用户，用于不同账号之间打通用户关系。</p>
+</blockquote>
+
+        <h2 id="UnionID-获取途径"   >
+          <a href="#UnionID-获取途径" class="heading-link"><i class="fas fa-link"></i></a><a href="#UnionID-获取途径" class="headerlink" title="UnionID 获取途径"></a>UnionID 获取途径</h2>
+      <p>必须有一个微信开放平台账号绑定了至少一个微信公众账号或者网站应用或者小程序，否则 <code>UnionID</code> 返回 null。绑定了开发者帐号的小程序，可以通过下面 3 种途径获取 <code>UnionID</code>。</p>
+<ul>
+<li><p><strong>方法一</strong>：调用接口 wx.getUserInfo，从解密数据中获取 UnionID。注意本接口需要用户授权，请开发者妥善处理用户拒绝授权后的情况。</p>
+</li>
+<li><p><strong>方法二</strong>：如果开发者帐号下存在同主体的公众号，并且该用户已经关注了该公众号。开发者可以直接通过 wx.login 获取到该用户 UnionID，无须用户再次授权。</p>
+</li>
+<li><p><strong>方法三</strong>：如果开发者帐号下存在同主体的公众号或移动应用，并且该用户已经授权登录过该公众号或移动应用。开发者也可以直接通过 wx.login 获取到该用户 UnionID，无须用户再次授权。</p>
+</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/0xxx3wwfci.png"></p>
+
+        <h1 id="在应用中如何保存用户登录态"   >
+          <a href="#在应用中如何保存用户登录态" class="heading-link"><i class="fas fa-link"></i></a><a href="#在应用中如何保存用户登录态" class="headerlink" title="在应用中如何保存用户登录态"></a>在应用中如何保存用户登录态</h1>
+      <p>保存用户登录态，一直以来都有两种解决方案：前端保存和后端保存。</p>
+
+        <h2 id="后端保存"   >
+          <a href="#后端保存" class="heading-link"><i class="fas fa-link"></i></a><a href="#后端保存" class="headerlink" title="后端保存"></a>后端保存</h2>
+      <p>在 登录 ③ 中写 session 的时候可以直接设定过期时间，定期通知小程序前端重新进行登录（<code>wx.login</code>）。</p>
+
+        <h2 id="前端保存"   >
+          <a href="#前端保存" class="heading-link"><i class="fas fa-link"></i></a><a href="#前端保存" class="headerlink" title="前端保存"></a>前端保存</h2>
+      <p>因为 <code>session_key</code> 存在时效性问题（毕竟是用来查看敏感信息），而小程序前端可以通过 <code>wx.checkSession()</code> 来检查 <code>session_key</code> 是否过期。所以可以通过这个来作为保存用户登录态的机制，这也是小程序文档中推荐的方法：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/q4i5au2srx.png"></p>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ 本文结束，感谢您的阅读 ------</div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://niki571.github.io/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F/">小程序</a></span></div><nav class="post-paginator paginator"><div class="paginator-prev"><a class="paginator-prev__link" href="/%E4%BB%8Ereflect-metadata%E7%90%86%E8%A7%A3Nest%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/"><span class="paginator-prev__icon"><i class="fas fa-angle-left"></i></span><span class="paginator-prev__text">从 reflect metadata 理解 Nest 的实现原理</span></a></div><div class="paginator-next"><a class="paginator-next__link" href="/python%E8%BF%9B%E9%98%B6%EF%BC%88%E4%B8%89%EF%BC%89%E5%AE%88%E6%8A%A4%E7%BA%BF%E7%A8%8B/"><span class="paginator-prev__text">python 进阶（三）守护线程</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">文章目录</span><span class="sidebar-nav-ov">站点概览</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8E%88%E6%9D%83%E5%92%8C%E7%99%BB%E5%BD%95%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">
+          授权和登录的意义</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%88%E6%9D%83"><span class="toc-number">1.1.</span> <span class="toc-text">
+          授权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%99%BB%E5%BD%95"><span class="toc-number">1.2.</span> <span class="toc-text">
+          登录</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#session-key-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">
+          session_key 的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#wx-getUserInfo"><span class="toc-number">2.1.</span> <span class="toc-text">
+          wx.getUserInfo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#getPhoneNumber"><span class="toc-number">2.2.</span> <span class="toc-text">
+          getPhoneNumber</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#unionId-%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%8C%E6%9C%89%E5%93%AA%E4%BA%9B%E8%8E%B7%E5%8F%96%E9%80%94%E5%BE%84%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">
+          unionId 的作用，有哪些获取途径？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#UnionID-%E6%9C%BA%E5%88%B6%E8%AF%B4%E6%98%8E"><span class="toc-number">3.1.</span> <span class="toc-text">
+          UnionID 机制说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UnionID-%E8%8E%B7%E5%8F%96%E9%80%94%E5%BE%84"><span class="toc-number">3.2.</span> <span class="toc-text">
+          UnionID 获取途径</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%A8%E5%BA%94%E7%94%A8%E4%B8%AD%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%80%81"><span class="toc-number">4.</span> <span class="toc-text">
+          在应用中如何保存用户登录态</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E4%BF%9D%E5%AD%98"><span class="toc-number">4.1.</span> <span class="toc-text">
+          后端保存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E4%BF%9D%E5%AD%98"><span class="toc-number">4.2.</span> <span class="toc-text">
+          前端保存</span></a></li></ol></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/avatar.JPEG" alt="avatar"></div><p class="sidebar-ov-author__text">Keep Studying, Keep Creating</p></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">你已阅读了 </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>由 <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> 强力驱动</span><span> v6.3.0</span><span class="footer__devider">|</span><span>主题 - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
