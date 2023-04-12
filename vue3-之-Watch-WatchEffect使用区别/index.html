@@ -1,0 +1,201 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="曾经以为自己会用 watch 、 watchEffect 了，后来发现只是略懂皮毛。最近我就把 Vue3 的侦听器全面梳理了一下，分享给大家。看看有没有你不会的吧，一起学起来！                     Watch                           基本用法       当我们需要在数据变化时执行一些“副作用”：如更改 DOM、执行异步操作，我们可以使用 watch">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vue3 之 Watch WatchEffect 的使用和区别">
+<meta property="og:url" content="https://niki571.github.io/vue3-%E4%B9%8B-Watch-WatchEffect%E4%BD%BF%E7%94%A8%E5%8C%BA%E5%88%AB/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="曾经以为自己会用 watch 、 watchEffect 了，后来发现只是略懂皮毛。最近我就把 Vue3 的侦听器全面梳理了一下，分享给大家。看看有没有你不会的吧，一起学起来！                     Watch                           基本用法       当我们需要在数据变化时执行一些“副作用”：如更改 DOM、执行异步操作，我们可以使用 watch">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-08-12T08:09:19.000Z">
+<meta property="article:modified_time" content="2023-04-12T08:24:01.986Z">
+<meta property="article:author" content="WuQianying">
+<meta property="article:tag" content="Vue">
+<meta name="twitter:card" content="summary"><title>vue3 之 Watch WatchEffect 的使用和区别 | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/vue3-%E4%B9%8B-Watch-WatchEffect%E4%BD%BF%E7%94%A8%E5%8C%BA%E5%88%AB/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":false},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"复制","copySuccess":"复制成功","copyError":"复制失败"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">vue3 之 Watch WatchEffect 的使用和区别</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">发表于</span><span class="post-meta-item__value">2022-08-12</span></span></div></header><div class="post-body"><p>曾经以为自己会用 <code>watch</code> 、 <code>watchEffect</code> 了，后来发现只是略懂皮毛。最近我就把 Vue3 的侦听器全面梳理了一下，分享给大家。看看有没有你不会的吧，一起学起来！</p>
+
+        <h1 id="Watch"   >
+          <a href="#Watch" class="heading-link"><i class="fas fa-link"></i></a><a href="#Watch" class="headerlink" title="Watch"></a>Watch</h1>
+      
+        <h2 id="基本用法"   >
+          <a href="#基本用法" class="heading-link"><i class="fas fa-link"></i></a><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2>
+      <p>当我们需要在数据变化时执行一些“副作用”：如更改 DOM、执行异步操作，我们可以使用 <code>watch</code> 函数：</p>
+<span id="more"></span>
+
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;script setup&gt;</span><br><span class="line"><span class="keyword">import</span> &#123; ref, watch &#125; <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> question = <span class="title function_">ref</span>(<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> answer = <span class="title function_">ref</span>(<span class="string">&#x27;This is answer. ;-)&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 侦听一个 ref</span></span><br><span class="line"><span class="title function_">watch</span>(question, <span class="keyword">async</span> (newQuestion, oldQuestion) =&gt; &#123;</span><br><span class="line">  answer.<span class="property">value</span> = <span class="string">&#x27;Thinking...&#x27;</span></span><br><span class="line">  <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="title function_">fetch</span>(<span class="string">&#x27;https://...&#x27;</span>)</span><br><span class="line">  answer.<span class="property">value</span> = (<span class="keyword">await</span> res.<span class="title function_">json</span>()).<span class="property">answer</span></span><br><span class="line">&#125;)</span><br><span class="line">&lt;/script&gt;</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">template</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;<span class="name">input</span> <span class="attr">v-model</span>=<span class="string">&quot;question&quot;</span> /&gt;</span></span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123; answer &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;/<span class="name">template</span>&gt;</span></span></span><br></pre></td></tr></table></div></figure>
+
+<p><code>watch()</code> 一共可以接受三个参数，侦听数据源、回调函数和配置选项。</p>
+
+        <h2 id="侦听数据源"   >
+          <a href="#侦听数据源" class="heading-link"><i class="fas fa-link"></i></a><a href="#侦听数据源" class="headerlink" title="侦听数据源"></a>侦听数据源</h2>
+      <p><code>watch</code> 的第一个参数可以是不同形式的“数据源”，它可以是：</p>
+<ul>
+<li>一个 ref</li>
+<li>一个计算属性</li>
+<li>一个 getter 函数（有返回值的函数）</li>
+<li>一个响应式对象</li>
+<li>以上类型的值组成的数组</li>
+</ul>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> x = <span class="title function_">ref</span>(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">const</span> y = <span class="title function_">ref</span>(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">const</span> doubleX = <span class="title function_">computed</span>(<span class="function">() =&gt;</span> x.<span class="property">value</span> \* <span class="number">2</span>)</span><br><span class="line"><span class="keyword">const</span> obj = <span class="title function_">reactive</span>(&#123; <span class="attr">count</span>: <span class="number">0</span> &#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 单个 ref</span></span><br><span class="line"><span class="title function_">watch</span>(x, <span class="function">(<span class="params">newValue</span>) =&gt;</span> &#123;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`x is <span class="subst">$&#123;newValue&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 计算属性</span></span><br><span class="line"><span class="title function_">watch</span>(doubleX, <span class="function">(<span class="params">newValue</span>) =&gt;</span> &#123;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`doubleX is <span class="subst">$&#123;newValue&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// getter 函数</span></span><br><span class="line"><span class="title function_">watch</span>(</span><br><span class="line"><span class="function">() =&gt;</span> x.<span class="property">value</span> + y.<span class="property">value</span>,</span><br><span class="line"><span class="function">(<span class="params">sum</span>) =&gt;</span> &#123;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`sum of x + y is: <span class="subst">$&#123;sum&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 响应式对象</span></span><br><span class="line"><span class="title function_">watch</span>(obj, <span class="function">(<span class="params">newValue, oldValue</span>) =&gt;</span> &#123;</span><br><span class="line"><span class="comment">// 在嵌套的属性变更时触发</span></span><br><span class="line"><span class="comment">// 注意：`newValue` 此处和 `oldValue` 是相等的</span></span><br><span class="line"><span class="comment">// 因为它们是同一个对象！</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 以上类型的值组成的数组</span></span><br><span class="line"><span class="title function_">watch</span>([x, <span class="function">() =&gt;</span> y.<span class="property">value</span>], <span class="function">(<span class="params">[newX, newY]</span>) =&gt;</span> &#123;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`x is <span class="subst">$&#123;newX&#125;</span> and y is <span class="subst">$&#123;newY&#125;</span>`</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></div></figure>
+
+<p>注意，你不能直接侦听响应式对象的属性值，例如：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = <span class="title function_">reactive</span>(&#123; <span class="attr">count</span>: <span class="number">0</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 错误，因为 watch() 得到的参数是一个 number</span></span><br><span class="line"><span class="title function_">watch</span>(obj.<span class="property">count</span>, <span class="function">(<span class="params">count</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`count is: <span class="subst">$&#123;count&#125;</span>`</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>这里需要用一个返回该属性的 getter 函数：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 提供一个 getter 函数</span></span><br><span class="line"><span class="title function_">watch</span>(</span><br><span class="line">  <span class="function">() =&gt;</span> obj.<span class="property">count</span>,</span><br><span class="line">  <span class="function">(<span class="params">count</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">`count is: <span class="subst">$&#123;count&#125;</span>`</span>);</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></div></figure>
+
+
+        <h2 id="回调函数"   >
+          <a href="#回调函数" class="heading-link"><i class="fas fa-link"></i></a><a href="#回调函数" class="headerlink" title="回调函数"></a>回调函数</h2>
+      <p><code>watch</code> 的第二个参数是数据发生变化时执行的回调函数。</p>
+<p>这个回调函数接受三个参数：新值、旧值，以及一个用于清理副作用的回调函数。该回调函数会在副作用下一次执行前调用，可以用来清除无效的副作用，如等待中的异步请求：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> id = <span class="title function_">ref</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">const</span> data = <span class="title function_">ref</span>(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="title function_">watch</span>(id, <span class="keyword">async</span> (newValue, oldValue, onCleanup) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; response, cancel &#125; = <span class="title function_">doAsyncWork</span>(id.<span class="property">value</span>);</span><br><span class="line">  <span class="comment">// `cancel` 会在 `id` 更改时调用</span></span><br><span class="line">  <span class="comment">// 以便取消之前未完成的请求</span></span><br><span class="line">  <span class="title function_">onCleanup</span>(cancel);</span><br><span class="line">  data.<span class="property">value</span> = <span class="keyword">await</span> response.<span class="title function_">json</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p><code>watch</code>的返回值是一个用来停止该副作用的函数：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> unwatch = <span class="title function_">watch</span>(<span class="function">() =&gt;</span> &#123;&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...当该侦听器不再需要时</span></span><br><span class="line"><span class="title function_">unwatch</span>();</span><br></pre></td></tr></table></div></figure>
+
+<p>注意：使用同步语句创建的侦听器，会自动绑定到宿主组件实例上，并且会在宿主组件卸载时自动停止。使用异步回调创建一个侦听器，则不会绑定到当前组件上，你必须手动停止它，以防内存泄漏。如下面这个例子：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;script setup&gt;</span><br><span class="line"><span class="keyword">import</span> &#123; watchEffect &#125; <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 组件卸载会自动停止</span></span><br><span class="line"><span class="title function_">watchEffect</span>(<span class="function">() =&gt;</span> &#123;&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 组件卸载不会停止！</span></span><br><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="title function_">watchEffect</span>(<span class="function">() =&gt;</span> &#123;&#125;)</span><br><span class="line">&#125;, <span class="number">100</span>)</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></div></figure>
+
+
+        <h2 id="配置选项"   >
+          <a href="#配置选项" class="heading-link"><i class="fas fa-link"></i></a><a href="#配置选项" class="headerlink" title="配置选项"></a>配置选项</h2>
+      <p><code>watch</code> 的第三个参数是一个可选的对象，支持以下选项：</p>
+<ul>
+<li><code>immediate</code>：在侦听器创建时立即触发回调。</li>
+<li><code>deep</code>：深度遍历，以便在深层级变更时触发回调。</li>
+<li><code>flush</code>：回调函数的触发时机。pre：默认，dom 更新前调用，post: dom 更新后调用，sync 同步调用。</li>
+<li><code>onTrack / onTrigger</code>：用于调试的钩子。在依赖收集和回调函数触发时被调用。</li>
+</ul>
+
+        <h2 id="深层侦听器"   >
+          <a href="#深层侦听器" class="heading-link"><i class="fas fa-link"></i></a><a href="#深层侦听器" class="headerlink" title="深层侦听器"></a>深层侦听器</h2>
+      <p>直接给 <code>watch()</code> 传入一个响应式对象，会默认创建一个深层侦听器 —— 所有嵌套的属性变更时都会被触发：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = <span class="title function_">reactive</span>(&#123; <span class="attr">count</span>: <span class="number">0</span> &#125;);</span><br><span class="line"></span><br><span class="line"><span class="title function_">watch</span>(obj, <span class="function">(<span class="params">newValue, oldValue</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// 在嵌套的属性变更时触发</span></span><br><span class="line">  <span class="comment">// 注意：`newValue` 此处和 `oldValue` 是相等的</span></span><br><span class="line">  <span class="comment">// 因为它们是同一个对象！</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">obj.<span class="property">count</span>++;</span><br></pre></td></tr></table></div></figure>
+
+<p>相比之下，一个返回响应式对象的 getter 函数，只有在对象被替换时才会触发：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> obj = <span class="title function_">reactive</span>(&#123;</span><br><span class="line">  <span class="attr">someString</span>: <span class="string">&quot;hello&quot;</span>,</span><br><span class="line">  <span class="attr">someObject</span>: &#123; <span class="attr">count</span>: <span class="number">0</span> &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="title function_">watch</span>(</span><br><span class="line">  <span class="function">() =&gt;</span> obj.<span class="property">someObject</span>,</span><br><span class="line">  <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 仅当 obj.someObject 被替换时触发</span></span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></div></figure>
+
+<p>当然，你也可以显式地加上 <code>deep</code> 选项，强制转成深层侦听器：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">watch</span>(</span><br><span class="line">  <span class="function">() =&gt;</span> obj.<span class="property">someObject</span>,</span><br><span class="line">  <span class="function">(<span class="params">newValue, oldValue</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// `newValue` 此处和 `oldValue` 是相等的</span></span><br><span class="line">    <span class="comment">// 除非 obj.someObject 被整个替换了</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;deep&quot;</span>, newValue.<span class="property">count</span>, oldValue.<span class="property">count</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123; <span class="attr">deep</span>: <span class="literal">true</span> &#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">obj.<span class="property">someObject</span>.<span class="property">count</span>++; <span class="comment">// deep 1 1</span></span><br></pre></td></tr></table></div></figure>
+
+<p>深层侦听一个响应式对象或数组，新值和旧值是相等的。为了解决这个问题，我们可以对值进行深拷贝。</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">watch</span>(</span><br><span class="line">  <span class="function">() =&gt;</span> _.<span class="title function_">cloneDeep</span>(obj.<span class="property">someObject</span>),</span><br><span class="line">  <span class="function">(<span class="params">newValue, oldValue</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 此时 `newValue` 此处和 `oldValue` 是不相等的</span></span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;deep&quot;</span>, newValue.<span class="property">count</span>, oldValue.<span class="property">count</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123; <span class="attr">deep</span>: <span class="literal">true</span> &#125;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">obj.<span class="property">someObject</span>.<span class="property">count</span>++; <span class="comment">// deep 1 0</span></span><br></pre></td></tr></table></div></figure>
+
+<p>注意：深层侦听需要遍历所有嵌套的属性，当数据结构庞大时，开销很大。所以我们要谨慎使用，并且留意性能。</p>
+
+        <h1 id="watchEffect"   >
+          <a href="#watchEffect" class="heading-link"><i class="fas fa-link"></i></a><a href="#watchEffect" class="headerlink" title="watchEffect"></a>watchEffect</h1>
+      <p><code>watch()</code> 是懒执行的：当数据源发生变化时，才会执行回调。但在某些场景中，我们希望在创建侦听器时，立即执行一遍回调。当然使用 <code>immediate</code> 选项也能实现：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> url = <span class="title function_">ref</span>(<span class="string">&quot;https://...&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> data = <span class="title function_">ref</span>(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">fetchData</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="title function_">fetch</span>(url.<span class="property">value</span>);</span><br><span class="line">  data.<span class="property">value</span> = <span class="keyword">await</span> response.<span class="title function_">json</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 立即执行一次，再侦听 url 变化</span></span><br><span class="line"><span class="title function_">watch</span>(url, fetchData, &#123; <span class="attr">immediate</span>: <span class="literal">true</span> &#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p>可以看到 <code>watch</code> 用到了三个参数，我们可以用 <code>watchEffect</code> 来简化上面的代码。<code>watchEffect</code> 会立即执行一遍回调函数，如果这时函数产生了副作用，Vue 会自动追踪副作用的依赖关系，自动分析出侦听数据源。上面的例子可以重写为：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> url = <span class="title function_">ref</span>(<span class="string">&quot;https://...&quot;</span>);</span><br><span class="line"><span class="keyword">const</span> data = <span class="title function_">ref</span>(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 一个参数就可以搞定</span></span><br><span class="line"><span class="title function_">watchEffect</span>(<span class="keyword">async</span> () =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> response = <span class="keyword">await</span> <span class="title function_">fetch</span>(url.<span class="property">value</span>);</span><br><span class="line">  data.<span class="property">value</span> = <span class="keyword">await</span> response.<span class="title function_">json</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></div></figure>
+
+<p><code>watchEffect</code> 接受两个参数，第一个参数是数据发生变化时执行的回调函数，用法和 <code>watch</code> 一样。第二个参数是一个可选的对象，支持 <code>flush</code> 和 <code>onTrack / onTrigger</code> 选项，功能和 <code>watch</code> 相同。</p>
+<p>注意：<code>watchEffect</code> 仅会在其同步执行期间，才追踪依赖。使用异步回调时，只有在第一个 <code>await</code> 之前访问到的依赖才会被追踪。</p>
+
+        <h1 id="watch-vs-watchEffect"   >
+          <a href="#watch-vs-watchEffect" class="heading-link"><i class="fas fa-link"></i></a><a href="#watch-vs-watchEffect" class="headerlink" title="watch vs. watchEffect"></a>watch vs. watchEffect</h1>
+      <p><code>watch</code> 和 <code>watchEffect</code> 的主要功能是相同的，都能响应式地执行回调函数。它们的区别是追踪响应式依赖的方式不同：</p>
+<ul>
+<li><code>watch</code> 只追踪明确定义的数据源，不会追踪在回调中访问到的东西；默认情况下，只有在数据源发生改变时才会触发回调；watch 可以访问侦听数据的新值和旧值。</li>
+<li><code>watchEffect</code> 会初始化执行一次，在副作用发生期间追踪依赖，自动分析出侦听数据源；<code>watchEffect</code>  无法访问侦听数据的新值和旧值。</li>
+</ul>
+<p>简单一句话，<code>watch</code> 功能更加强大，而 <code>watchEffect</code> 在某些场景下更加简洁。</p>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ 本文结束，感谢您的阅读 ------</div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://niki571.github.io/tags/Vue/">Vue</a></span></div><nav class="post-paginator paginator"><div class="paginator-prev"><a class="paginator-prev__link" href="/%E7%94%A8%E5%90%88%E6%88%90%E5%A4%A7%E8%A5%BF%E7%93%9C%E6%9D%A5%E5%AD%A6%E4%B9%A0matter-js%20API/"><span class="paginator-prev__icon"><i class="fas fa-angle-left"></i></span><span class="paginator-prev__text">用合成大西瓜来学习 matter.js API</span></a></div><div class="paginator-next"><a class="paginator-next__link" href="/Flutter%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%EF%BC%88%E4%B8%89%EF%BC%89-%20Element/"><span class="paginator-prev__text">Flutter源码解析（三）Element</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">文章目录</span><span class="sidebar-nav-ov">站点概览</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Watch"><span class="toc-number">1.</span> <span class="toc-text">
+          Watch</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="toc-number">1.1.</span> <span class="toc-text">
+          基本用法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%A6%E5%90%AC%E6%95%B0%E6%8D%AE%E6%BA%90"><span class="toc-number">1.2.</span> <span class="toc-text">
+          侦听数据源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-number">1.3.</span> <span class="toc-text">
+          回调函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E9%A1%B9"><span class="toc-number">1.4.</span> <span class="toc-text">
+          配置选项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%B1%E5%B1%82%E4%BE%A6%E5%90%AC%E5%99%A8"><span class="toc-number">1.5.</span> <span class="toc-text">
+          深层侦听器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#watchEffect"><span class="toc-number">2.</span> <span class="toc-text">
+          watchEffect</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#watch-vs-watchEffect"><span class="toc-number">3.</span> <span class="toc-text">
+          watch vs. watchEffect</span></a></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/avatar.JPEG" alt="avatar"></div><p class="sidebar-ov-author__text">Keep Studying, Keep Creating</p></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">你已阅读了 </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>由 <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> 强力驱动</span><span> v6.3.0</span><span class="footer__devider">|</span><span>主题 - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
