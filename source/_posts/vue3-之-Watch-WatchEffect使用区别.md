@@ -2,7 +2,7 @@
 title: vue3 之 Watch WatchEffect 的使用和区别
 date: 2022-08-12 16:09:19
 tags: [Vue]
-categories: 前端
+categories: Vue
 ---
 
 曾经以为自己会用 `watch` 、 `watchEffect` 了，后来发现只是略懂皮毛。最近我就把 Vue3 的侦听器全面梳理了一下，分享给大家。看看有没有你不会的吧，一起学起来！

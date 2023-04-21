@@ -2,7 +2,7 @@
 title: 写一个自己的webpack plugin
 date: 2021-06-30 19:19:04
 tags: [webpack]
-categories: 前端
+categories: 工程化
 ---
 
 想必大家都用过 webpack，也或多或少了解它的原理，但是不知道大家有没有写过 Webpack 的插件呢？

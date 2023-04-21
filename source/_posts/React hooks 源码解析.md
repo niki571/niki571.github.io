@@ -1,8 +1,8 @@
 ---
 title: React hooks 源码解析
 date: 2021-06-15 19:56:12
-tags: [源码分析, React]
-categories: 前端
+tags: [hooks]
+categories: React
 ---
 
 本文将讲解 hooks 的执行过程以及常用的 hooks 的源码。

@@ -2,7 +2,7 @@
 title: 为什么React的Diff算法不采用Vue的双端对比算法
 date: 2021-05-03 15:59:22
 tags: [原理, React]
-categories: 前端
+categories: React
 ---
 
 # 前言
