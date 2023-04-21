@@ -1,0 +1,345 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="hooks: 什么叫大势所趋？       2019 年年初，react 在 16.8.x 版本正式具备了 hooks 能力。 2019 年 6 月，尤雨溪在 vue&#x2F;github-issues 里提出了关于 vue3 Component API 的提案。（vue hooks 的基础） 在后续的 react 和 vue3 相关版本中，相关 hooks 能力都开始被更多人所接受">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么React和Vue都选择了Hooks">
+<meta property="og:url" content="https://niki571.github.io/%E4%B8%BA%E4%BB%80%E4%B9%88React%E5%92%8CVue%E9%83%BD%E9%80%89%E6%8B%A9%E4%BA%86Hooks/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="hooks: 什么叫大势所趋？       2019 年年初，react 在 16.8.x 版本正式具备了 hooks 能力。 2019 年 6 月，尤雨溪在 vue&#x2F;github-issues 里提出了关于 vue3 Component API 的提案。（vue hooks 的基础） 在后续的 react 和 vue3 相关版本中，相关 hooks 能力都开始被更多人所接受">
+<meta property="og:locale">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/2b3514ceea4546929ee96b0f21832738%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/3919caf747174395b5b285065d9df8fb%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/4e181e3c923341b08b5a4398bf5ada71%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp">
+<meta property="og:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/b3680785b61c4af8befdbe2b9ca18c90%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp">
+<meta property="article:published_time" content="2021-05-18T11:00:41.000Z">
+<meta property="article:modified_time" content="2023-04-21T06:34:13.476Z">
+<meta property="article:author" content="WuQianying">
+<meta property="article:tag" content="hooks">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/niki571/MyImageHost/main/2b3514ceea4546929ee96b0f21832738%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp"><title>为什么React和Vue都选择了Hooks | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/%E4%B8%BA%E4%BB%80%E4%B9%88React%E5%92%8CVue%E9%83%BD%E9%80%89%E6%8B%A9%E4%BA%86Hooks/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":false},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"复制","copySuccess":"复制成功","copyError":"复制失败"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">为什么React和Vue都选择了Hooks</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">发表于</span><span class="post-meta-item__value">2021-05-18</span></span></div></header><div class="post-body">
+        <h1 id="hooks-什么叫大势所趋？"   >
+          <a href="#hooks-什么叫大势所趋？" class="heading-link"><i class="fas fa-link"></i></a><a href="#hooks-什么叫大势所趋？" class="headerlink" title="hooks: 什么叫大势所趋？"></a>hooks: 什么叫大势所趋？</h1>
+      <p>2019 年年初，<code>react</code> 在 <code>16.8.x</code> 版本正式具备了 <code>hooks</code> 能力。</p>
+<p>2019 年 6 月，尤雨溪在 <code>vue/github-issues</code> 里提出了关于 <code>vue3 Component API</code> 的提案。（<code>vue hooks</code> 的基础）</p>
+<p>在后续的 <code>react</code> 和 <code>vue3</code> 相关版本中，相关 <code>hooks</code> 能力都开始被更多人所接受。</p>
+<span id="more"></span>
+
+<p>除此之外，<code>solid.js</code>、 <code>preact</code> 等框架，也是开始选择加入 <code>hooks</code> 大家庭。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/2b3514ceea4546929ee96b0f21832738%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp"></p>
+<p>可以预见，虽然目前仍然是 <code>class Component</code> 和 <code>hooks api</code> 并驾齐驱的场面，但未来几年里，<code>hooks</code> 极有可能取代 <code>class Component</code> 成为业内真正的主流。</p>
+
+        <h1 id="什么是-hooks？"   >
+          <a href="#什么是-hooks？" class="heading-link"><i class="fas fa-link"></i></a><a href="#什么是-hooks？" class="headerlink" title="什么是 hooks？"></a>什么是 hooks？</h1>
+      <blockquote>
+<p>年轻时你不懂我，就像后来我不懂 <code>hooks</code>😭。</p>
+</blockquote>
+
+        <h2 id="hooks-的定义"   >
+          <a href="#hooks-的定义" class="heading-link"><i class="fas fa-link"></i></a><a href="#hooks-的定义" class="headerlink" title="hooks 的定义"></a>hooks 的定义</h2>
+      <p><code>hooks</code> 直译是 <strong>钩子</strong>，它并不仅是 <code>react</code>，甚至不仅是前端界的专用术语，而是整个行业所熟知的用语。通常指：</p>
+<blockquote>
+<p>系统运行到某一时期时，会调用被注册到该时机的回调函数。</p>
+</blockquote>
+<p>比较常见的钩子有：<code>windows</code> 系统的钩子能监听到系统的各种事件，浏览器提供的 <code>onload</code> 或 <code>addEventListener</code> 能注册在浏览器各种时机被调用的方法。</p>
+<p>以上这些，都可以被称一声 <code>hook</code>。</p>
+<p>但是很显然，在特定领域的特定话题下，<code>hooks</code> 这个词被赋予了一些特殊的含义。</p>
+<p>在 <code>react@16.x</code> 之前，当我们谈论 <code>hooks</code> 时，我们可能谈论的是<strong>组件的生命周期</strong>。</p>
+<p>但是现在，<code>hooks</code> 则有了全新的含义。</p>
+<p>以 <code>react</code> 为例，<code>hooks</code> 是：</p>
+<blockquote>
+<p>一系列以 <code>use</code> 作为开头的方法，它们提供了让你可以完全避开 <code>class 式写法</code>，在函数式组件中完成生命周期、状态管理、逻辑复用等几乎全部组件开发工作的能力。</p>
+</blockquote>
+<p>简化一下：</p>
+<blockquote>
+<p>一系列方法，提供了在函数式组件中完成开发工作的能力。</p>
+</blockquote>
+<p>（记住这个关键词: <strong>函数式组件</strong>）</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; useState, useEffect, useCallback &#125; <span class="keyword">from</span> <span class="string">&quot;react&quot;</span>;</span><br><span class="line"><span class="comment">// 比如以上这几个方法，就是最为典型的 Hooks</span></span><br></pre></td></tr></table></div></figure>
+
+<p>而在 <code>vue</code> 中， <code>hooks</code> 的定义可能更模糊，姑且总结一下：</p>
+<blockquote>
+<p>在 <code>vue 组合式 API</code> 里，以 <code>use</code> 作为开头的，一系列提供了组件复用、状态管理等开发能力的方法。</p>
+</blockquote>
+<p>（关键词：<strong>组合式 API</strong>）</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; useSlots, useAttrs &#125; <span class="keyword">from</span> <span class="string">&quot;vue&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; useRouter &#125; <span class="keyword">from</span> <span class="string">&quot;vue-router&quot;</span>;</span><br><span class="line"><span class="comment">// 以上这些方法，也是 vue3 中相关的 Hook！</span></span><br></pre></td></tr></table></div></figure>
+
+<p>如：<code>useSlots</code>、 <code>useAttrs</code>、 <code>useRouter</code> 等。</p>
+<p>但主观来说，我认为 <code>vue 组合式 API</code> 其本身就是<code>vue hooks</code>的关键一环，起到了 <code>react hooks</code> 里对生命周期、状态管理的核心作用。（如 <code>onMounted</code>、 <code>ref</code> 等等）。</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/3919caf747174395b5b285065d9df8fb%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp"></p>
+<p>如果按这个标准来看的话，<code>vue</code> 和 <code>react</code> 中 <code>hooks</code> 的定义，似乎都差不多。</p>
+<p>那么为什么要提到是以 <code>use</code> 作为开头的方法呢？</p>
+
+        <h2 id="命名规范-和-指导思想"   >
+          <a href="#命名规范-和-指导思想" class="heading-link"><i class="fas fa-link"></i></a><a href="#命名规范-和-指导思想" class="headerlink" title="命名规范 和 指导思想"></a>命名规范 和 指导思想</h2>
+      <p>通常来说，<code>hooks</code> 的命名都是以 <code>use</code> 作为开头，这个规范也包括了那么我们自定义的 <code>hooks</code>。</p>
+<p>在 <code>react</code> 官方文档里，对 hooks 的定义和使用提出了 <strong>一个假设、两个只在</strong> 核心指导思想。</p>
+<ul>
+<li><p>一个假设： 假设任何以 <code>use</code> 开头并紧跟着一个大写字母的函数就是一个 <code>Hook</code>。</p>
+</li>
+<li><p>第一个只在： 只在 <code>React</code> 函数组件中调用 <code>Hook</code>，而不在普通函数中调用 <code>Hook</code>。（<code>Eslint</code> 通过判断一个方法是不是大坨峰命名来判断它是否是 <code>React</code> 函数）</p>
+</li>
+<li><p>第二个只在： 只在最顶层使用 <code>Hook</code>，而不要在循环，条件或嵌套函数中调用 <code>Hook</code>。</p>
+</li>
+</ul>
+<p>因为是约定，因而 <code>useXxx</code> 的命名并非强制，你依然可以将你自定义的 <code>hook</code> 命名为 <code>byXxx</code> 或其他方式，但不推荐。</p>
+<p>因为约定的力量在于：我们不用细看实现，也能通过命名来了解一个它是什么。</p>
+
+        <h1 id="为什么我们需要-hooks"   >
+          <a href="#为什么我们需要-hooks" class="heading-link"><i class="fas fa-link"></i></a><a href="#为什么我们需要-hooks" class="headerlink" title="为什么我们需要 hooks ?"></a>为什么我们需要 hooks ?</h1>
+      
+        <h2 id="更好的状态复用"   >
+          <a href="#更好的状态复用" class="heading-link"><i class="fas fa-link"></i></a><a href="#更好的状态复用" class="headerlink" title="更好的状态复用"></a>更好的状态复用</h2>
+      <blockquote>
+<p>怼的就是你，<code>mixin</code> ！</p>
+</blockquote>
+<p>在 <code>class</code> 组件模式下，状态逻辑的复用是一件困难的事情。</p>
+<p>假设有如下需求：</p>
+<blockquote>
+<p>当组件实例创建时，需要创建一个 <code>state</code> 属性：<code>name</code>，并随机给此 <code>name</code> 属性附一个初始值。除此之外，还得提供一个 <code>setName</code> 方法。你可以在组件其他地方开销和修改此状态属性。</p>
+</blockquote>
+<blockquote>
+<p>更重要的是：这个逻辑要可以复用，在各种业务组件里复用这个逻辑。</p>
+</blockquote>
+<p>在拥有 <code>Hooks</code> 之前，我首先会想到的解决方案一定是 <code>mixin</code>。</p>
+<p>代码如下：（此示例采用 <code>vue2 mixin</code> 写法 ）</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 混入文件：name-mixin.js</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="title function_">data</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">name</span>: <span class="title function_">genRandomName</span>(), <span class="comment">// 假装它能生成随机的名字</span></span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    <span class="title function_">setName</span>(<span class="params">name</span>) &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="property">name</span> = name;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 组件：my-component.vue</span></span><br><span class="line">&lt;template&gt;</span><br><span class="line"></span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>&#123;&#123; name &#125;&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">&lt;template&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line"><span class="keyword">import</span> nameMixin <span class="keyword">from</span> <span class="string">&#x27;./name-mixin&#x27;</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="attr">mixins</span>: [nameMixin],</span><br><span class="line">  <span class="comment">// 通过mixins, 你可以直接获得 nameMixin 中所定义的状态、方法、生命周期中的事件等</span></span><br><span class="line">  <span class="title function_">mounted</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="variable language_">this</span>.<span class="title function_">setName</span>(<span class="string">&#x27;Tom&#x27;</span>)</span><br><span class="line">    &#125;, <span class="number">3000</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&lt;script&gt;</span><br></pre></td></tr></table></div></figure>
+
+<p>粗略看来，<code>mixins</code> 似乎提供了非常不错的复用能力，但是，<code>react</code> 官方文档直接表明：</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/4e181e3c923341b08b5a4398bf5ada71%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp"></p>
+<p>为什么呢？</p>
+<p>因为 <code>mixins</code> 虽然提供了这种状态复用的能力，但它的弊端实在太多了。</p>
+<p><strong>弊端一：难以追溯的方法与属性！</strong></p>
+<p>试想一下，如果出现这种代码，你是否会怀疑人生：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="attr">mixins</span>: [a, b, c, d, e, f, g], <span class="comment">// 当然，这只是表示它混入了很多能力</span></span><br><span class="line">  <span class="title function_">mounted</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="variable language_">this</span>.<span class="property">name</span>);</span><br><span class="line">    <span class="comment">// mmp!这个 this.name 来自于谁？我难道要一个个混入看实现？</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+<p>又或者：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a.<span class="property">js</span> <span class="attr">mixins</span>: [b.<span class="property">js</span>]</span><br><span class="line"></span><br><span class="line">b.<span class="property">js</span> <span class="attr">mixins</span>: [c.<span class="property">js</span>]</span><br><span class="line"></span><br><span class="line">c.<span class="property">js</span> <span class="attr">mixins</span>: [d.<span class="property">js</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 你猜猜看, this.name 来自于谁？</span></span><br><span class="line"><span class="comment">// 求求你别再说了，我血压已经上来了</span></span><br></pre></td></tr></table></div></figure>
+
+<p><strong>弊端二：覆盖、同名？贵圈真乱！</strong></p>
+<p>当我同时想混入 <code>mixin-a.js</code> 和 <code>mixin-b.js</code> 以同时获得它们能力的时候，不幸的事情发生了：</p>
+<p>由于这两个 <code>mixin</code> 功能的开发者惺惺相惜，它们都定义了 <code>this.name</code> 作为属性。<br>这种时候，你会深深怀疑，<code>mixins</code> 究竟是不是一种科学的复用方式。</p>
+<p><strong>弊端三：梅开二度？代价很大！</strong></p>
+<p>仍然说上面的例子，如果我的需求发生了改变，我需要的不再是一个简单的状态 <code>name</code>，而是分别需要 <code>firstName</code> 和 <code>lastName</code>。<br>此时 <code>name-mixin.js</code> 混入的能力就会非常尴尬，因为我无法两次 <code>mixins</code> 同一个文件。</p>
+<p>当然，也是有解决方案的，如：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 动态生成 mixin</span></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">genNameMixin</span>(<span class="params">key, funcKey</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="title function_">data</span>(<span class="params"></span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        [key]: <span class="title function_">genRandomName</span>()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">methods</span>: &#123;</span><br><span class="line">      [funcKey]: <span class="keyword">function</span>(<span class="params">v</span>) &#123;</span><br><span class="line">        <span class="variable language_">this</span>.[key] = v</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="attr">mixins</span>: [</span><br><span class="line">    <span class="title function_">genNameMixin</span>(<span class="string">&#x27;firstName&#x27;</span>, <span class="string">&#x27;setFirstName&#x27;</span>),</span><br><span class="line">    <span class="title function_">genNameMixin</span>(<span class="string">&#x27;lastName&#x27;</span>, <span class="string">&#x27;setLastName&#x27;</span>),</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></div></figure>
+
+<p>确实通过动态生成 <code>mixin</code> 完成了能力的复用，但这样一来，无疑更加地增大了程序的复杂性，降低了可读性。</p>
+<p>因此，一种新的 “状态逻辑复用” 就变得极为迫切了——它就是 <code>Hooks</code>!</p>
+<p><strong><code>Hook</code> 的状态复用写法：</strong></p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单个 name 的写法</span></span><br><span class="line"><span class="keyword">const</span> &#123; name, setName &#125; = <span class="title function_">useName</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 梅开二度的写法</span></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="attr">name</span>: firstName, <span class="attr">setName</span>: setFirstName &#125; = <span class="title function_">useName</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; <span class="attr">name</span>: secondName, <span class="attr">setName</span>: setSecondName &#125; = <span class="title function_">useName</span>();</span><br></pre></td></tr></table></div></figure>
+
+<p>相比于 <code>mixins</code>，它们简直太棒了！</p>
+<ol>
+<li><p>方法和属性好追溯吗？这可太好了，谁产生的，哪儿来的一目了然。</p>
+</li>
+<li><p>会有重名、覆盖问题吗？完全没有！内部的变量在闭包内，返回的变量支持定义别名。</p>
+</li>
+<li><p>多次使用，没开 N 度？你看上面的代码块内不就“梅开三度” 了吗？</p>
+</li>
+</ol>
+<p>就冲 <strong>状态逻辑复用</strong> 这个理由，<code>Hooks</code> 就已经香得我口水直流了。</p>
+
+        <h2 id="代码组织"   >
+          <a href="#代码组织" class="heading-link"><i class="fas fa-link"></i></a><a href="#代码组织" class="headerlink" title="代码组织"></a>代码组织</h2>
+      <blockquote>
+<p>熵减，宇宙哲学到编码哲学。</p>
+</blockquote>
+<p>项目、模块、页面、功能，如何高效而清晰地组织代码，这一个看似简单的命题就算写几本书也无法完全说清楚。</p>
+<p>但一个页面中，N 件事情的代码在一个组件内互相纠缠确实是在 <code>Hooks</code> 出现之前非常常见的一种状态。</p>
+<p>那么 <code>Hooks</code> 写法在代码组织上究竟能带来怎样的提升呢？</p>
+<p><img src="https://raw.githubusercontent.com/niki571/MyImageHost/main/b3680785b61c4af8befdbe2b9ca18c90%7Etplv-k3u1fbpfcp-zoom-in-crop-mark_4536_0_0_0.awebp"></p>
+<p>（假设上图中每一种颜色就代码一种高度相关的业务逻辑）</p>
+<p>无论是 <code>vue</code> 还是 <code>react</code>, 通过 <code>Hooks</code> 写法都能做到，将“分散在各种声明周期里的代码块”，通过 <code>Hooks</code> 的方式将相关的内容聚合到一起。</p>
+<p>这样带来的好处是显而易见的：<strong>高度聚合，可阅读性提升</strong>。伴随而来的便是 <strong>效率提升，bug 变少</strong>。</p>
+<p>按照“物理学”里的理论来说，这种代码组织方式，就算是“熵减”了。</p>
+
+        <h2 id="比-class-组件更容易理解"   >
+          <a href="#比-class-组件更容易理解" class="heading-link"><i class="fas fa-link"></i></a><a href="#比-class-组件更容易理解" class="headerlink" title="比 class 组件更容易理解"></a>比 class 组件更容易理解</h2>
+      <blockquote>
+<p>尤其是 <code>this</code> 。</p>
+</blockquote>
+<p>在 <code>react</code> 的 <code>class</code> 写法中，随处可见各种各样的 <code>.bind(this)</code>。（甚至官方文档里也有专门的章节描述了“为什么绑定是必要的？”这一问题）</p>
+<p><code>vue</code> 玩家别笑，<code>computed: &#123; a: () =&gt; &#123; this &#125; &#125;</code> 里的 <code>this</code> 也是 <code>undefined</code>。</p>
+<p>很显然，绑定虽然“必要”，但并不是“优点”，反而是“故障高发”地段。</p>
+<p>但在 <code>Hooks</code> 写法中，你就完全不必担心 <code>this</code> 的问题了。</p>
+<p>因为：</p>
+<blockquote>
+<p>本来无一物，何处惹尘埃。</p>
+</blockquote>
+<p><code>Hooks</code> 写法直接告别了 <code>this</code>，从“函数”来，到“函数”去。</p>
+<p>妈妈再也不用担心我忘记写 <code>bind</code> 了。</p>
+
+        <h2 id="友好的渐进式"   >
+          <a href="#友好的渐进式" class="heading-link"><i class="fas fa-link"></i></a><a href="#友好的渐进式" class="headerlink" title="友好的渐进式"></a>友好的渐进式</h2>
+      <blockquote>
+<p>随风潜入夜，润物细无声。</p>
+</blockquote>
+<p>渐进式的含义是：你可以一点点深入使用。</p>
+<p>无论是 <code>vue</code> 还是 <code>react</code>，都只是提供了 <code>Hooks API</code>，并将它们的优劣利弊摆在了那里。并没有通过无法接受的 break change 来强迫你必须使用 <code>Hooks</code> 去改写之前的 <code>class 组件</code>。</p>
+<p>你依然可以在项目里一边写 <code>class 组件</code>，一边写 <code>Hooks 组件</code>，在项目的演进和开发过程中，这是一件没有痛感，却悄无声息改变着一切的事情。</p>
+<p>但是事情发展的趋势却很明显，越来越多的人加入了 <code>Hooks</code> 和 <code>组合式 API</code> 的大军。</p>
+
+        <h1 id="如何开始玩-hooks-？"   >
+          <a href="#如何开始玩-hooks-？" class="heading-link"><i class="fas fa-link"></i></a><a href="#如何开始玩-hooks-？" class="headerlink" title="如何开始玩 hooks ？"></a>如何开始玩 hooks ？</h1>
+      
+        <h2 id="环境和版本"   >
+          <a href="#环境和版本" class="heading-link"><i class="fas fa-link"></i></a><a href="#环境和版本" class="headerlink" title="环境和版本"></a>环境和版本</h2>
+      <p>在 <code>react</code> 项目中， <code>react</code> 的版本需要高于 <code>16.8.0</code>。</p>
+<p>而在 <code>vue</code> 项目中， <code>vue3.x</code> 是最好的选择，但 <code>vue2.6+</code> 配合 <code>@vue/composition-api</code>，也可以开始享受<code>组合式 API</code>的快乐。</p>
+
+        <h2 id="react-的-Hooks-写法"   >
+          <a href="#react-的-Hooks-写法" class="heading-link"><i class="fas fa-link"></i></a><a href="#react-的-Hooks-写法" class="headerlink" title="react 的 Hooks 写法"></a>react 的 Hooks 写法</h2>
+      <p>因为 <code>react Hooks</code> 仅支持<code>函数式组件</code>，因此需要创建一个<code>函数式组件 ``my-component.js</code>。</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// my-component.js</span></span><br><span class="line"><span class="keyword">import</span> &#123; useState, useEffect &#125; <span class="keyword">from</span> <span class="string">&quot;React&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> () =&gt; &#123;</span><br><span class="line">  <span class="comment">// 通过 useState 可以创建一个 状态属性 和一个赋值方法</span></span><br><span class="line">  <span class="keyword">const</span> [name, setName] = <span class="title function_">useState</span>(<span class="string">&quot;&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 通过 useEffect 可以对副作用进行处理</span></span><br><span class="line">  <span class="title function_">useEffect</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(name);</span><br><span class="line">  &#125;, [name]);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 通过 useMemo 能生成一个依赖 name 的变量 message</span></span><br><span class="line">  <span class="keyword">const</span> message = <span class="title function_">useMemo</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`hello, my name is <span class="subst">$&#123;name&#125;</span>`</span>;</span><br><span class="line">  &#125;, [name]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>&#123;message&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+
+        <h2 id="vue-的-Hooks-写法"   >
+          <a href="#vue-的-Hooks-写法" class="heading-link"><i class="fas fa-link"></i></a><a href="#vue-的-Hooks-写法" class="headerlink" title="vue 的 Hooks 写法"></a>vue 的 Hooks 写法</h2>
+      <p><code>vue</code> 的 <code>Hooks</code> 写法依赖于 <code>组合式 API</code>，因此本例采用<code>&lt;script setup&gt;</code> 来写：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  <span class="language-xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    &#123;&#123; message &#125;&#125;</span></span><br><span class="line"><span class="language-xml">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">&lt;/template&gt;</span><br><span class="line"></span><br><span class="line"><span class="language-xml"><span class="tag">&lt;<span class="name">script</span> <span class="attr">setup</span>&gt;</span><span class="language-javascript"></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">import</span> &#123; computed, ref &#125; <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="comment">// 定义了一个 ref 对象</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">const</span> name = <span class="title function_">ref</span>(<span class="string">&#x27;&#x27;</span>)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="comment">// 定义了一个依赖 name.value 的计算属性</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"><span class="keyword">const</span> message = <span class="title function_">computed</span>(<span class="function">() =&gt;</span> &#123;</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">  <span class="keyword">return</span> <span class="string">`hello, my name is <span class="subst">$&#123;name.value&#125;</span>`</span></span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml">&#125;)</span></span></span><br><span class="line"><span class="language-javascript"><span class="language-xml"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span></span><br></pre></td></tr></table></div></figure>
+
+<p>很明显，<code>vue 组合式 API</code> 里完成 <code>useState</code> 和 <code>useMemo</code> 相关工作的 API 并没有通过 <code>useXxx</code> 来命名，而是遵从了 Vue 一脉相承而来的 <code>ref</code> 和 <code>computed</code>。</p>
+<p>虽然不符合 <code>react Hook</code> 定义的 <code>Hook</code> 约定，但 <code>vue</code> 的 api 不按照 <code>react</code> 的约定好像也并没有什么不妥。</p>
+
+        <h1 id="开始第一个自定义-hook"   >
+          <a href="#开始第一个自定义-hook" class="heading-link"><i class="fas fa-link"></i></a><a href="#开始第一个自定义-hook" class="headerlink" title="开始第一个自定义 hook"></a>开始第一个自定义 hook</h1>
+      <p>除了官方提供的 <code>Hooks Api</code>, <code>Hooks</code> 的另外一个重要特质，就是可以自己进行<code>自定义 Hooks</code> 的定义，从而完成状态逻辑的复用。</p>
+<p>开源社区也都有很多不错的基于 <code>Hooks</code> 的封装，比如 <code>ahooks</code> ，又比如 <code>vueuse</code>。</p>
+<p>那么，我们应该怎么开始撰写 <code>自定义 Hooks</code> 呢？往下看吧！</p>
+
+        <h2 id="react-玩家看这里-👈"   >
+          <a href="#react-玩家看这里-👈" class="heading-link"><i class="fas fa-link"></i></a><a href="#react-玩家看这里-👈" class="headerlink" title="react 玩家看这里 👈"></a>react 玩家看这里 👈</h2>
+      <p>这里，我们扔用文章开头那个 useName 的需求为例，希望达到效果：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123; name, setName &#125; = <span class="title function_">useName</span>();</span><br><span class="line"><span class="comment">// 随机生成一个状态属性 name，它有一个随机名作为初始值</span></span><br><span class="line"><span class="comment">// 并且提供了一个可随时更新该值的方法 setName</span></span><br></pre></td></tr></table></div></figure>
+
+<p>如果我们要实现上面效果，我们该怎么写代码呢？</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">&quot;react&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title function_">useName</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 这个 useMemo 很关键</span></span><br><span class="line">  <span class="keyword">const</span> randomName = <span class="title class_">React</span>.<span class="title function_">useMemo</span>(<span class="function">() =&gt;</span> <span class="title function_">genRandomName</span>(), []);</span><br><span class="line">  <span class="keyword">const</span> [name, setName] = <span class="title class_">React</span>.<span class="title function_">useState</span>(randomName);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    name,</span><br><span class="line">    setName,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+<p>忍不住要再次感叹一次，和 <code>mixins</code> 相比，它不仅使用起来更棒，就连定义起来也那么简单。</p>
+
+        <h2 id="vue-玩家看这里-👈"   >
+          <a href="#vue-玩家看这里-👈" class="heading-link"><i class="fas fa-link"></i></a><a href="#vue-玩家看这里-👈" class="headerlink" title="vue 玩家看这里 👈"></a>vue 玩家看这里 👈</h2>
+      <p><code>vue3</code> 官网没有关于 <code>自定义 Hook</code> 的玩法介绍，但实践起来也并不困难。</p>
+<p>目标也定位实现一个 <code>useName</code> 方法：</p>
+<figure class="highlight typescript"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; ref &#125; <span class="keyword">from</span> <span class="string">&quot;vue&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="title function_">useName</span> = (<span class="params"></span>) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> name = <span class="title function_">ref</span>(<span class="title function_">genRandomName</span>());</span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">setName</span> = (<span class="params">v</span>) =&gt; &#123;</span><br><span class="line">    name.<span class="property">value</span> = v;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    name,</span><br><span class="line">    setName,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></div></figure>
+
+
+        <h2 id="vue-和-react-自定义-Hook-的异同"   >
+          <a href="#vue-和-react-自定义-Hook-的异同" class="heading-link"><i class="fas fa-link"></i></a><a href="#vue-和-react-自定义-Hook-的异同" class="headerlink" title="vue 和 react 自定义 Hook 的异同"></a>vue 和 react 自定义 Hook 的异同</h2>
+      <ul>
+<li>相似点： 总体思路是一致的</li>
+</ul>
+<p>都遵照着 “定义状态数据”，”操作状态数据”，”隐藏细节” 作为核心思路。</p>
+<ul>
+<li>差异点： <code>组合式 API</code> 和 <code>React 函数组件</code> 有着本质差异</li>
+</ul>
+<p><code>vue3</code> 的组件里， <code>setup</code> 是作为一个早于 <code>created</code> 的生命周期存在的，无论如何，在一个组件的渲染过程中只会进入一次。</p>
+<p><code>React 函数组件</code> 则完全不同，如果没有被 <code>memorized</code>，它们可能会被不停地触发，不停地进入并执行方法，因此需要开销的心智相比于 <code>vue</code> 其实是更多的。</p>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ 本文结束，感谢您的阅读 ------</div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://niki571.github.io/tags/hooks/">hooks</a></span></div><nav class="post-paginator paginator"><div class="paginator-prev"><a class="paginator-prev__link" href="/React%20hooks%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/"><span class="paginator-prev__icon"><i class="fas fa-angle-left"></i></span><span class="paginator-prev__text">React hooks 源码解析</span></a></div><div class="paginator-next"><a class="paginator-next__link" href="/%E4%B8%BA%E4%BB%80%E4%B9%88React%E7%9A%84Diff%E7%AE%97%E6%B3%95%E4%B8%8D%E9%87%87%E7%94%A8Vue%E7%9A%84%E5%8F%8C%E7%AB%AF%E5%AF%B9%E6%AF%94%E7%AE%97%E6%B3%95/"><span class="paginator-prev__text">为什么React的Diff算法不采用Vue的双端对比算法</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">文章目录</span><span class="sidebar-nav-ov">站点概览</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#hooks-%E4%BB%80%E4%B9%88%E5%8F%AB%E5%A4%A7%E5%8A%BF%E6%89%80%E8%B6%8B%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">
+          hooks: 什么叫大势所趋？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-hooks%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">
+          什么是 hooks？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#hooks-%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">2.1.</span> <span class="toc-text">
+          hooks 的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%BD%E5%90%8D%E8%A7%84%E8%8C%83-%E5%92%8C-%E6%8C%87%E5%AF%BC%E6%80%9D%E6%83%B3"><span class="toc-number">2.2.</span> <span class="toc-text">
+          命名规范 和 指导思想</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E4%BB%AC%E9%9C%80%E8%A6%81-hooks"><span class="toc-number">3.</span> <span class="toc-text">
+          为什么我们需要 hooks ?</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E5%A5%BD%E7%9A%84%E7%8A%B6%E6%80%81%E5%A4%8D%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">
+          更好的状态复用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E7%BB%84%E7%BB%87"><span class="toc-number">3.2.</span> <span class="toc-text">
+          代码组织</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AF%94-class-%E7%BB%84%E4%BB%B6%E6%9B%B4%E5%AE%B9%E6%98%93%E7%90%86%E8%A7%A3"><span class="toc-number">3.3.</span> <span class="toc-text">
+          比 class 组件更容易理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8B%E5%A5%BD%E7%9A%84%E6%B8%90%E8%BF%9B%E5%BC%8F"><span class="toc-number">3.4.</span> <span class="toc-text">
+          友好的渐进式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%BC%80%E5%A7%8B%E7%8E%A9-hooks-%EF%BC%9F"><span class="toc-number">4.</span> <span class="toc-text">
+          如何开始玩 hooks ？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%92%8C%E7%89%88%E6%9C%AC"><span class="toc-number">4.1.</span> <span class="toc-text">
+          环境和版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#react-%E7%9A%84-Hooks-%E5%86%99%E6%B3%95"><span class="toc-number">4.2.</span> <span class="toc-text">
+          react 的 Hooks 写法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vue-%E7%9A%84-Hooks-%E5%86%99%E6%B3%95"><span class="toc-number">4.3.</span> <span class="toc-text">
+          vue 的 Hooks 写法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%87%AA%E5%AE%9A%E4%B9%89-hook"><span class="toc-number">5.</span> <span class="toc-text">
+          开始第一个自定义 hook</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#react-%E7%8E%A9%E5%AE%B6%E7%9C%8B%E8%BF%99%E9%87%8C-%F0%9F%91%88"><span class="toc-number">5.1.</span> <span class="toc-text">
+          react 玩家看这里 👈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vue-%E7%8E%A9%E5%AE%B6%E7%9C%8B%E8%BF%99%E9%87%8C-%F0%9F%91%88"><span class="toc-number">5.2.</span> <span class="toc-text">
+          vue 玩家看这里 👈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vue-%E5%92%8C-react-%E8%87%AA%E5%AE%9A%E4%B9%89-Hook-%E7%9A%84%E5%BC%82%E5%90%8C"><span class="toc-number">5.3.</span> <span class="toc-text">
+          vue 和 react 自定义 Hook 的异同</span></a></li></ol></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/avatar.JPEG" alt="avatar"></div><p class="sidebar-ov-author__text">Keep Studying, Keep Creating</p></div><div class="sidebar-ov-social"><a class="sidebar-ov-social-item" href="https://github.com/" target="_blank" rel="noopener" data-popover="Github" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-github"></i></span></a><a class="sidebar-ov-social-item" href="https://plus.google.com/" target="_blank" rel="noopener" data-popover="Google" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-google"></i></span></a><a class="sidebar-ov-social-item" href="https://twitter.com/" target="_blank" rel="noopener" data-popover="Twitter" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-twitter"></i></span></a><a class="sidebar-ov-social-item" href="https://youtube.com/" target="_blank" rel="noopener" data-popover="Youtube" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-youtube"></i></span></a></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">你已阅读了 </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>由 <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> 强力驱动</span><span> v6.3.0</span><span class="footer__devider">|</span><span>主题 - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
