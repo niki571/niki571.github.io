@@ -2,7 +2,7 @@
 title: 为什么React和Vue都选择了Hooks
 date: 2021-05-18 19:00:41
 tags: [hooks]
-categories: React
+categories: Vue
 ---
 
 # hooks: 什么叫大势所趋？
