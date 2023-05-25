@@ -6,7 +6,7 @@
 <meta property="og:description" content="本文通过使用 LocalAuth 进行身份验证，身份确认后，使用 JwtAuth 颁发身份令牌以及验证身份令牌的有效性。                     LocalAuth       Passport 提供了一种名为 passport-local 的策略，它实现了使用用户名&#x2F;密码的身份验证机制。 首先安装需要的包： 12npm install --save @nestjs&#x2F;passpor">
 <meta property="og:locale">
 <meta property="article:published_time" content="2022-03-30T08:19:08.000Z">
-<meta property="article:modified_time" content="2023-03-31T10:35:29.700Z">
+<meta property="article:modified_time" content="2023-05-25T08:46:56.510Z">
 <meta property="article:author" content="WuQianying">
 <meta property="article:tag" content="Nestjs">
 <meta name="twitter:card" content="summary"><title>Nestjs 身份验证策略 LocalAuth + JwtAuth | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/Nestjs-%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E7%AD%96%E7%95%A5-LocalAuth-JwtAuth/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
@@ -40,6 +40,8 @@ window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></he
       <p>Passport 提供了一种名为 passport-local 的策略，它实现了使用<code>用户名/密码</code>的身份验证机制。</p>
 <p>首先安装需要的包：</p>
 <figure class="highlight shell"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install --save @nestjs/passport passport passport-local</span><br><span class="line">npm install --save-dev @types/passport-local</span><br></pre></td></tr></table></div></figure>
+
+<span id="more"></span>
 
 <p>在 nest 项目中创建 <code>AuthModule</code> 和 <code>AuthService</code>：</p>
 <figure class="highlight shell"><div class="table-container"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nest g module auth</span><br><span class="line">nest g service auth</span><br></pre></td></tr></table></div></figure>

@@ -6,7 +6,7 @@
 <meta property="og:description" content="前言       最近在写 Nestjs 后端项目，crud 写多了，发现关于守卫、管道、拦截器这些用的不多的东西反而生疏了，现在总结一下。 本篇主要实现以下功能：  使用guards和decorators实现数据校验核查 通过interceptors和decorators实现敏感数据录入 自定义pipes实现数据转化">
 <meta property="og:locale">
 <meta property="article:published_time" content="2023-05-25T08:08:36.000Z">
-<meta property="article:modified_time" content="2023-05-25T08:45:11.039Z">
+<meta property="article:modified_time" content="2023-05-25T08:47:03.651Z">
 <meta property="article:author" content="WuQianying">
 <meta property="article:tag" content="Nestjs">
 <meta name="twitter:card" content="summary"><title>Nestjs高阶用法-守卫、管道、拦截器 | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/Nestjs%E9%AB%98%E9%98%B6%E7%94%A8%E6%B3%95-%E5%AE%88%E5%8D%AB%E3%80%81%E7%AE%A1%E9%81%93%E3%80%81%E6%8B%A6%E6%88%AA%E5%99%A8/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
@@ -43,6 +43,8 @@ window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></he
 <li>通过<code>interceptors</code>和<code>decorators</code>实现敏感数据录入</li>
 <li>自定义<code>pipes</code>实现数据转化</li>
 </ul>
+<span id="more"></span>
+
 
         <h1 id="守卫-Guards"   >
           <a href="#守卫-Guards" class="heading-link"><i class="fas fa-link"></i></a><a href="#守卫-Guards" class="headerlink" title="守卫 Guards"></a>守卫 Guards</h1>
