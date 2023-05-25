@@ -15,6 +15,8 @@ categories: Node
 - 通过`interceptors`和`decorators`实现敏感数据录入
 - 自定义`pipes`实现数据转化
 
+<!-- more -->
+
 # 守卫 Guards
 
 在 **请求到达业务逻辑前** 会经过 `guard`，这样在接口前可以做统一处理。

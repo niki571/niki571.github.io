@@ -18,6 +18,8 @@ npm install --save @nestjs/passport passport passport-local
 npm install --save-dev @types/passport-local
 ```
 
+<!-- more -->
+
 在 nest 项目中创建 `AuthModule` 和 `AuthService`：
 
 ```shell
