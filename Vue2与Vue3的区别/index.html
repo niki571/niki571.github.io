@@ -1,0 +1,143 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="format-detection" content="telephone=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="icon" href="/images/icons/favicon-16x16.png?v=2.8.0" type="image/png" sizes="16x16"><link rel="icon" href="/images/icons/favicon-32x32.png?v=2.8.0" type="image/png" sizes="32x32"><meta name="description" content="前言       Vue 内部根据功能可以被分为三个大的模块：响应性 reactivite、运行时 runtime、编辑器 compiler，以及一些小的功能点。 那么要说 vue2 与 vue3 的区别，我们需要从这三个方面加小的功能点进行说起。                     响应性 reactivite       vue2 的响应性主要依赖 Object.de">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue2 与 Vue3 的区别">
+<meta property="og:url" content="https://niki571.github.io/Vue2%E4%B8%8EVue3%E7%9A%84%E5%8C%BA%E5%88%AB/index.html">
+<meta property="og:site_name" content="吴倩颖的网络日志">
+<meta property="og:description" content="前言       Vue 内部根据功能可以被分为三个大的模块：响应性 reactivite、运行时 runtime、编辑器 compiler，以及一些小的功能点。 那么要说 vue2 与 vue3 的区别，我们需要从这三个方面加小的功能点进行说起。                     响应性 reactivite       vue2 的响应性主要依赖 Object.de">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-08-20T11:02:07.000Z">
+<meta property="article:modified_time" content="2023-05-28T08:38:32.398Z">
+<meta property="article:author" content="WuQianying">
+<meta property="article:tag" content="Vue">
+<meta name="twitter:card" content="summary"><title>Vue2 与 Vue3 的区别 | 吴倩颖的网络日志</title><link ref="canonical" href="https://niki571.github.io/Vue2%E4%B8%8EVue3%E7%9A%84%E5%8C%BA%E5%88%AB/"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.12.1/css/all.min.css" type="text/css"><link rel="stylesheet" href="/css/index.css?v=2.8.0"><link rel="stylesheet" href="css/custom.css"><script>var Stun = window.Stun || {};
+var CONFIG = {
+  root: '/',
+  algolia: undefined,
+  assistSearch: undefined,
+  fontIcon: {"prompt":{"success":"fas fa-check-circle","info":"fas fa-arrow-circle-right","warning":"fas fa-exclamation-circle","error":"fas fa-times-circle"},"copyBtn":"fas fa-copy"},
+  sidebar: {"offsetTop":"20px","tocMaxDepth":6},
+  header: {"enable":true,"showOnPost":true,"scrollDownIcon":true},
+  postWidget: {"endText":true},
+  nightMode: {"enable":true},
+  back2top: {"enable":true},
+  codeblock: {"style":"carbon","highlight":"ocean","wordWrap":false},
+  reward: false,
+  fancybox: false,
+  zoomImage: {"gapAside":"20px"},
+  galleryWaterfall: undefined,
+  lazyload: false,
+  pjax: {"avoidBanner":true},
+  externalLink: {"icon":{"enable":true,"name":"fas fa-external-link-alt"}},
+  shortcuts: undefined,
+  prompt: {"copyButton":"Copy","copySuccess":"Copy Success","copyError":"Copy Error"},
+  sourcePath: {"js":"js","css":"css","images":"images"},
+};
+
+window.CONFIG = CONFIG;</script><meta name="generator" content="Hexo 6.3.0"></head><body><div class="container" id="container"><header class="header" id="header"><div class="header-inner"><nav class="header-nav header-nav--fixed"><div class="header-nav-inner"><div class="header-nav-menubtn"><i class="fas fa-bars"></i></div><div class="header-nav-menu"><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/"><span class="header-nav-menu-item__icon"><i class="fas fa-home"></i></span><span class="header-nav-menu-item__text">首页</span></a></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="javascript:;" onclick="return false;"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-pen-nib"></i></span><span class="header-nav-menu-item__text">文章</span></a><div class="header-nav-submenu"><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/archives/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-folder-open"></i></span><span class="header-nav-submenu-item__text">归档</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/categories/"><span class="header-nav-submenu-item__icon"><i class="fas fa-layer-group"></i></span><span class="header-nav-submenu-item__text">分类</span></a></div><div class="header-nav-submenu-item"><a class="header-nav-submenu-item__link" href="/tags/"><span class="header-nav-submenu-item__icon"><i class="fas fa-solid fa-tag"></i></span><span class="header-nav-submenu-item__text">标签</span></a></div></div></div><div class="header-nav-menu-item"><a class="header-nav-menu-item__link" href="/me/"><span class="header-nav-menu-item__icon"><i class="fas fa-solid fa-star"></i></span><span class="header-nav-menu-item__text">我</span></a></div></div><div class="header-nav-mode"><div class="mode"><div class="mode-track"><span class="mode-track-moon"></span><span class="mode-track-sun"></span></div><div class="mode-thumb"></div></div></div></div></nav><div class="header-banner"><div class="header-banner-info"><div class="header-banner-info__title">吴倩颖的网络日志</div></div><div class="header-banner-arrow"><div class="header-banner-arrow__icon"><i class="fas fa-angle-down"></i></div></div></div></div></header><main class="main" id="main"><div class="main-inner"><div class="content-wrap" id="content-wrap"><div class="content" id="content"><!-- Just used to judge whether it is an article page--><div id="is-post"></div><div class="post"><header class="post-header"><h1 class="post-title">Vue2 与 Vue3 的区别</h1><div class="post-meta"><span class="post-meta-item post-meta-item--createtime"><span class="post-meta-item__icon"><i class="far fa-calendar-plus"></i></span><span class="post-meta-item__info">Created</span><span class="post-meta-item__value">2022-08-20</span></span></div></header><div class="post-body">
+        <h1 id="前言"   >
+          <a href="#前言" class="heading-link"><i class="fas fa-link"></i></a><a href="#前言" class="headerlink" title="前言"></a>前言</h1>
+      <p>Vue 内部根据功能可以被分为三个大的模块：<code>响应性 reactivite</code>、<code>运行时 runtime</code>、<code>编辑器 compiler</code>，以及一些小的功能点。</p>
+<p>那么要说 <code>vue2</code> 与 <code>vue3</code> 的区别，我们需要从这三个方面加小的功能点进行说起。</p>
+
+        <h1 id="响应性-reactivite"   >
+          <a href="#响应性-reactivite" class="heading-link"><i class="fas fa-link"></i></a><a href="#响应性-reactivite" class="headerlink" title="响应性 reactivite"></a>响应性 reactivite</h1>
+      <p><code>vue2</code> 的响应性主要依赖 <code>Object.defineProperty</code> 进行实现，但是 <code>Object.defineProperty</code> 只能监听<code>指定对象</code>的<code>指定属性</code>的 <code>getter</code> 行为和 <code>setter</code> 行为，那么这样在某些情况下就会出现问题。</p>
+<span id="more"></span>
+
+<p>什么问题呢？</p>
+<p>比如说：我们在 data 中声明了一个对象 person ，但是在后期为 person 增加了新的属性，那么这个新的属性就会失去响应性。</p>
+<p>想要解决这个问题其实也非常的简单，可以通过 <code>Vue.$set</code> 方法来增加指定对象指定属性的响应性。但是这样的一种方式，在 <code>Vue</code> 的自动响应性机制中是不合理。</p>
+<p>所以在 <code>Vue3</code> 中，Vue 引入了<code>反射</code>和<code>代理</code>的概念，所谓<code>反射</code>指的是 <code>Reflect</code>，所谓<code>代理</code>指的是 <code>Proxy</code>。</p>
+<p>我们可以利用 <code>Proxy</code> 直接代理一个普通对象，得到一个 <code>proxy</code> 实例的代理对象。在 <code>vue3</code> 中，这个过程通过 <code>reactive</code> 这个方法进行实现。</p>
+<p>但是 <code>proxy</code> 只能实现代理复杂数据类型，所以 <code>vue</code> 额外提供了 <code>ref</code> 方法，用来处理简单数据类型的响应性。</p>
+<p><code>ref</code> 本质上并没有进行数据的监听，而是构建了一个 <code>RefImpl</code> 的类，通过 <code>set</code> 和 <code>get</code> 标记了 <code>value</code> 函数，以此来进行的实现。所以 <code>ref</code> 必须要通过 <code>.value</code> 进行触发，之所以要这么做本质是调用 <code>value</code> 方法。</p>
+
+        <h1 id="运行时-runtime"   >
+          <a href="#运行时-runtime" class="heading-link"><i class="fas fa-link"></i></a><a href="#运行时-runtime" class="headerlink" title="运行时 runtime"></a>运行时 runtime</h1>
+      <p>所谓的运行时，大多数时候指的是 <code>renderer 渲染器</code>，渲染器本质上是一个对象。内部主要三个方法 <code>render</code>、<code>hydrate</code>、<code>createApp</code> ，其中 render 主要处理渲染逻辑，<code>hydrate</code> 主要处理服务端渲染逻辑，而 <code>createApp</code> 就是创建 <code>vue 实例</code>的方法。</p>
+<p>这里咱们主要来说 <code>render</code> 渲染函数，<code>vue3</code> 中为了保证宿主环境与渲染逻辑的分离，把所有与宿主环境相关的逻辑进行了抽离，通过接口的形式进行传递。这样做的目的其实是为了解绑宿主环境与渲染逻辑，以保证 vue 在非浏览器端的宿主环境下可以正常渲染。</p>
+
+        <h1 id="编辑器-compiler"   >
+          <a href="#编辑器-compiler" class="heading-link"><i class="fas fa-link"></i></a><a href="#编辑器-compiler" class="headerlink" title="编辑器 compiler"></a>编辑器 compiler</h1>
+      <p>vue 中的 <code>compiler</code> 其实是一个 <code>DSL</code>（特定领域下专用语言编辑器） ，其目的是为了把 <code>template 模板</code> 编译成 <code>render 函数</code>。 逻辑主要是分成了三大步：<code>parse</code>、<code>transform</code> 和 <code>generate</code>。</p>
+<p>其中 <code>parse</code> 的作用是为了把 <code>template</code> 转化为 <code>AST（抽象语法树）</code>，<code>transform</code> 可以把 <code>AST（抽象语法树）</code> 转化为 <code>JavaScript AST</code>，最后由 <code>generate</code> 把 <code>JavaScript AST</code> 通过转化为 <code>render 函数</code>。转化的过程中会涉及到一些稍微复杂的概念，比如 有限自动状态机 这个就不再这里展开说了。</p>
+
+        <h1 id="除此之外，还有一些其他的变化"   >
+          <a href="#除此之外，还有一些其他的变化" class="heading-link"><i class="fas fa-link"></i></a><a href="#除此之外，还有一些其他的变化" class="headerlink" title="除此之外，还有一些其他的变化"></a>除此之外，还有一些其他的变化</h1>
+      <p>比如 <code>vue3</code> 新增的 <code>composition API</code>。 <code>composition API</code> 在 <code>vue3.0</code> 和 <code>vue3.2</code> 中会有一些不同的呈现，比如说：最初的 <code>composition API</code> 以 <code>setup 函数</code>作为入口函数，<code>setup 函数</code>必须返回两种类型的值：第一是对象，第二是函数。</p>
+<p>当 <code>setup 函数</code>返回<code>对象</code>时，对象中的数据或方法可以在 <code>template</code> 中被使用。当 <code>setup 函数</code>返回<code>函数</code>时，函数会被作为 <code>render 函数</code>。</p>
+<p>但是这种 <code>setup 函数</code>的形式并不好，因为所有的逻辑都集中在 <code>setup 函数</code>中，很容易出现一个巨大的 <code>setup 函数</code>，我们把它叫做巨石（屎山）函数。</p>
+<p>所以 <code>vue 3.2</code> 的时候，新增了一个 <code>script setup</code> 的语法糖，尝试解决这个问题。目前来看 <code>script setup</code> 的呈现还是非常不错的。</p>
+<p>除此之外还有一些小的变化，比如 <code>Fragment</code>、<code>Teleport</code>、<code>Suspense</code> 等等，这些就不去说了…</p>
+</div><footer class="post-footer"><div class="post-ending ending"><div class="ending__text">------ END ------</div></div><div class="post-tags"><span class="post-tags-item"><span class="post-tags-item__icon"><i class="fas fa-tag"></i></span><a class="post-tags-item__link" href="https://niki571.github.io/tags/Vue/">Vue</a></span></div><nav class="post-paginator paginator"><div class="paginator-prev"><a class="paginator-prev__link" href="/%E7%94%A8%E5%90%88%E6%88%90%E5%A4%A7%E8%A5%BF%E7%93%9C%E6%9D%A5%E5%AD%A6%E4%B9%A0matter-js%20API/"><span class="paginator-prev__icon"><i class="fas fa-angle-left"></i></span><span class="paginator-prev__text">用合成大西瓜来学习 matter.js API</span></a></div><div class="paginator-next"><a class="paginator-next__link" href="/vue3-%E4%B9%8B-Watch-WatchEffect%E4%BD%BF%E7%94%A8%E5%8C%BA%E5%88%AB/"><span class="paginator-prev__text">vue3 之 Watch WatchEffect 的使用和区别</span><span class="paginator-next__icon"><i class="fas fa-angle-right"></i></span></a></div></nav></footer></div></div></div><div class="sidebar-wrap" id="sidebar-wrap"><aside class="sidebar" id="sidebar"><div class="sidebar-nav"><span class="sidebar-nav-toc current">Catalog</span><span class="sidebar-nav-ov">Overview</span></div><section class="sidebar-toc"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">
+          前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%93%8D%E5%BA%94%E6%80%A7-reactivite"><span class="toc-number">2.</span> <span class="toc-text">
+          响应性 reactivite</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6-runtime"><span class="toc-number">3.</span> <span class="toc-text">
+          运行时 runtime</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E8%BE%91%E5%99%A8-compiler"><span class="toc-number">4.</span> <span class="toc-text">
+          编辑器 compiler</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%99%A4%E6%AD%A4%E4%B9%8B%E5%A4%96%EF%BC%8C%E8%BF%98%E6%9C%89%E4%B8%80%E4%BA%9B%E5%85%B6%E4%BB%96%E7%9A%84%E5%8F%98%E5%8C%96"><span class="toc-number">5.</span> <span class="toc-text">
+          除此之外，还有一些其他的变化</span></a></li></ol></section><!-- ov = overview--><section class="sidebar-ov hide"><div class="sidebar-ov-author"><div class="sidebar-ov-author__avatar"><img class="sidebar-ov-author__avatar_img" src="/images/icons/avatar.JPEG" alt="avatar"></div><p class="sidebar-ov-author__text">Keep Studying, Keep Creating</p></div><div class="sidebar-ov-social"><a class="sidebar-ov-social-item" href="https://github.com/niki571" target="_blank" rel="noopener" data-popover="Github" data-popover-pos="up"><span class="sidebar-ov-social-item__icon"><i class="fab fa-github"></i></span></a></div></section><div class="sidebar-reading"><div class="sidebar-reading-info"><span class="sidebar-reading-info__text">You have read </span><span class="sidebar-reading-info__num">0</span><span class="sidebar-reading-info__perc">%</span></div><div class="sidebar-reading-line"></div></div></aside></div><div class="clearfix"></div></div></main><footer class="footer" id="footer"><div class="footer-inner"><div><span>Copyright © 2023</span><span class="footer__icon"><i class="fas fa-heart"></i></span><span>WuQianying</span></div><div><span>Powered by <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a></span><span> v6.3.0</span><span class="footer__devider">|</span><span>Theme - <a href="https://github.com/liuyib/hexo-theme-stun/" title="Stun" target="_blank" rel="noopener">Stun</a></span><span> v2.8.0</span></div></div></footer><div class="loading-bar" id="loading-bar"><div class="loading-bar__progress"></div></div><div class="back2top" id="back2top"><span class="back2top__icon"><i class="fas fa-rocket"></i></span></div></div><script src="https://cdn.jsdelivr.net/npm/jquery@v3.4.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.min.js"></script><script src="https://cdn.jsdelivr.net/npm/velocity-animate@1.5.2/velocity.ui.min.js"></script><script src="https://cdn.jsdelivr.net/npm/ribbon.js@latest/dist/ribbon.min.js" size="120" alpha="0.6" zIndex="-1"></script><script src="https://cdn.jsdelivr.net/npm/pjax@latest/pjax.min.js"></script><script>window.addEventListener('DOMContentLoaded', function () {
+  var pjax = new Pjax({"selectors":["head title","#main",".pjax-reload",".header-banner"],"history":true,"scrollTo":false,"scrollRestoration":false,"cacheBust":false,"debug":false,"currentUrlFullReload":false,"timeout":0});
+  // 加载进度条的计时器
+  var loadingTimer = null;
+
+  // 重置页面 Y 方向上的滚动偏移量
+  document.addEventListener('pjax:send', function () {
+    $('.header-nav-menu').removeClass('show');
+    if (CONFIG.pjax && CONFIG.pjax.avoidBanner) {
+      $('html').velocity('scroll', {
+        duration: 500,
+        offset: $('#header').height(),
+        easing: 'easeInOutCubic'
+      });
+    }
+
+    var loadingBarWidth = 20;
+    var MAX_LOADING_WIDTH = 95;
+
+    $('.loading-bar').addClass('loading');
+    $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(function () {
+      loadingBarWidth += 3;
+      if (loadingBarWidth > MAX_LOADING_WIDTH) {
+        loadingBarWidth = MAX_LOADING_WIDTH;
+      }
+      $('.loading-bar__progress').css('width', loadingBarWidth + '%');
+    }, 500);
+  }, false);
+
+  window.addEventListener('pjax:complete', function () {
+    clearInterval(loadingTimer);
+    $('.loading-bar__progress').css('width', '100%');
+    $('.loading-bar').removeClass('loading');
+    setTimeout(function () {
+      $('.loading-bar__progress').css('width', '0');
+    }, 400);
+    $('link[rel=prefetch], script[data-pjax-rm]').each(function () {
+      $(this).remove();
+    });
+    $('script[data-pjax], #pjax-reload script').each(function () {
+      $(this).parent().append($(this).remove());
+    });
+
+    if (Stun.utils.pjaxReloadBoot) {
+      Stun.utils.pjaxReloadBoot();
+    }
+    if (Stun.utils.pjaxReloadScroll) {
+      Stun.utils.pjaxReloadScroll();
+    }
+    if (Stun.utils.pjaxReloadSidebar) {
+      Stun.utils.pjaxReloadSidebar();
+    }
+    if (false) {
+      if (Stun.utils.pjaxReloadHeader) {
+        Stun.utils.pjaxReloadHeader();
+      }
+      if (Stun.utils.pjaxReloadScrollIcon) {
+        Stun.utils.pjaxReloadScrollIcon();
+      }
+      if (Stun.utils.pjaxReloadLocalSearch) {
+        Stun.utils.pjaxReloadLocalSearch();
+      }
+    }
+  }, false);
+}, false);</script><div id="pjax-reload"></div><script src="/js/utils.js?v=2.8.0"></script><script src="/js/stun-boot.js?v=2.8.0"></script><script src="/js/scroll.js?v=2.8.0"></script><script src="/js/header.js?v=2.8.0"></script><script src="/js/sidebar.js?v=2.8.0"></script></body></html>
